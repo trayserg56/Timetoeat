@@ -5,3 +5,4 @@ services:
     volumes:
       - ./certbot/conf:/etc/letsencrypt:ro
       - ./docker/nginx/active-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
+      - ./docker/nginx/snippets:/etc/nginx/snippets:ro
