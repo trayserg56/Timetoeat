@@ -246,6 +246,8 @@ onBeforeUnmount(() => {
                             :src="activeHeroSlide.image"
                             :alt="activeHeroSlide.title"
                             class="size-full object-cover transition duration-700"
+                            fetchpriority="high"
+                            decoding="async"
                         />
                         <div
                             v-else
@@ -321,6 +323,8 @@ onBeforeUnmount(() => {
                             :src="mealSet.image"
                             :alt="mealSet.name"
                             class="size-full object-cover transition duration-500 group-hover:scale-105"
+                            loading="lazy"
+                            decoding="async"
                         />
                         <div v-else class="size-full bg-[linear-gradient(135deg,#fed7aa,#fb923c,#7c2d12)]"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/35 to-transparent"></div>
@@ -414,6 +418,8 @@ onBeforeUnmount(() => {
                                 :src="product.image"
                                 :alt="product.name"
                                 class="size-full object-cover transition duration-500 group-hover:scale-105"
+                                loading="lazy"
+                                decoding="async"
                             />
                             <div v-else class="size-full bg-[linear-gradient(135deg,#fde68a,#fb923c,#7c2d12)]"></div>
                             <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-stone-950/25 to-transparent"></div>
@@ -507,7 +513,7 @@ onBeforeUnmount(() => {
                     >
                         <Link :href="`/news/${item.slug}`" class="block">
                             <div class="relative h-52 overflow-hidden">
-                                <img v-if="item.image" :src="item.image" :alt="item.title" class="size-full object-cover" />
+                                <img v-if="item.image" :src="item.image" :alt="item.title" class="size-full object-cover" loading="lazy" decoding="async" />
                                 <div v-else class="size-full bg-[linear-gradient(135deg,#fdba74,#fb923c,#7c2d12)]"></div>
                             </div>
                             <div class="space-y-4 p-6">
@@ -544,6 +550,7 @@ onBeforeUnmount(() => {
                         :src="selectedCatalogItem.image"
                         :alt="selectedCatalogItem.name"
                         class="size-full object-cover"
+                        decoding="async"
                     />
                     <div
                         v-else

@@ -34,7 +34,7 @@ function formatDate(value) {
         <section class="grid gap-10 py-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <article class="overflow-hidden rounded-[2rem] bg-white shadow-[0_20px_70px_rgba(120,87,43,0.08)]">
                 <div class="relative h-72 overflow-hidden">
-                    <img v-if="news.image" :src="news.image" :alt="news.title" class="size-full object-cover" />
+                    <img v-if="news.image" :src="news.image" :alt="news.title" class="size-full object-cover" fetchpriority="high" decoding="async" />
                     <div v-else class="size-full bg-[linear-gradient(135deg,#fdba74,#fb923c,#7c2d12)]"></div>
                 </div>
                 <div class="space-y-6 p-5 sm:p-8">
@@ -72,6 +72,8 @@ function formatDate(value) {
                                         :src="item.image"
                                         :alt="item.title"
                                         class="size-full object-cover"
+                                        loading="lazy"
+                                        decoding="async"
                                     />
                                     <div
                                         v-else

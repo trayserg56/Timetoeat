@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Banners\Schemas;
 
+use App\Filament\Forms\Components\CatalogImageUpload;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -62,12 +62,11 @@ class BannerForm
                     ->label('Описание')
                     ->rows(4)
                     ->columnSpanFull(),
-                FileUpload::make('image_path')
+                CatalogImageUpload::make('image_path')
                     ->label('Изображение баннера')
                     ->disk('public')
                     ->directory('banners')
-                    ->image()
-                    ->helperText('Можно загрузить файл или использовать внешний URL ниже.'),
+                    ->helperText('JPG, PNG, WEBP или AVIF до 2 МБ. Можно также указать внешний URL ниже.'),
                 TextInput::make('image_url')
                     ->label('URL изображения')
                     ->url()

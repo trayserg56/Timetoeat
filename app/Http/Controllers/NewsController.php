@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\News;
+use App\Support\CatalogImageUrl;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,7 +23,7 @@ class NewsController extends Controller
                 'title' => $item->title,
                 'slug' => $item->slug,
                 'excerpt' => $item->excerpt,
-                'image' => $this->resolveImageUrl($item->image_url ?: $item->image_path),
+                'image' => CatalogImageUrl::resolve($item->image_url ?: $item->image_path),
                 'published_at' => $item->published_at?->toIso8601String(),
             ])
             ->values();
@@ -54,7 +55,7 @@ class NewsController extends Controller
                 'id' => $item->id,
                 'title' => $item->title,
                 'slug' => $item->slug,
-                'image' => $this->resolveImageUrl($item->image_url ?: $item->image_path),
+                'image' => CatalogImageUrl::resolve($item->image_url ?: $item->image_path),
                 'published_at' => $item->published_at?->toIso8601String(),
             ])
             ->values();
@@ -66,23 +67,13 @@ class NewsController extends Controller
                 'slug' => $news->slug,
                 'excerpt' => $news->excerpt,
                 'content' => $news->content,
-                'image' => $this->resolveImageUrl($news->image_url ?: $news->image_path),
+                'image' => CatalogImageUrl::resolve(
+                    $news->image_url ?: $news->image_path,
+                    (int) config('catalog.images.hero_width', 1200),
+                ),
                 'published_at' => $news->published_at?->toIso8601String(),
             ],
             'latestNews' => $latestNews,
         ]);
-    }
-
-    protected function resolveImageUrl(?string $path): ?string
-    {
-        if (! $path) {
-            return null;
-        }
-
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return $path;
-        }
-
-        return asset('storage/'.$path);
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\MealSets\Schemas;
 
+use App\Filament\Forms\Components\CatalogImageUpload;
 use App\Filament\Forms\Components\MultiDatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -33,11 +33,10 @@ class MealSetForm
                     ->required()
                     ->numeric()
                     ->suffix('коп.'),
-                FileUpload::make('image_path')
+                CatalogImageUpload::make('image_path')
                     ->label('Изображение')
                     ->disk('public')
-                    ->directory('meal-sets')
-                    ->image(),
+                    ->directory('meal-sets'),
                 MultiDatePicker::make('menu_dates')
                     ->label('Даты меню')
                     ->default([

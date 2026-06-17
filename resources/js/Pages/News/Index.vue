@@ -50,7 +50,7 @@ function formatDate(value) {
                 >
                     <Link :href="`/news/${item.slug}`" class="block">
                     <div class="relative h-56 overflow-hidden">
-                        <img v-if="item.image" :src="item.image" :alt="item.title" class="size-full object-cover" />
+                        <img v-if="item.image" :src="item.image" :alt="item.title" class="size-full object-cover" loading="lazy" decoding="async" />
                         <div v-else class="size-full bg-[linear-gradient(135deg,#fdba74,#fb923c,#7c2d12)]"></div>
                     </div>
                     <div class="space-y-4 p-6">

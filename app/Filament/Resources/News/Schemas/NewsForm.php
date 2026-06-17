@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\News\Schemas;
 
+use App\Filament\Forms\Components\CatalogImageUpload;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -30,12 +30,11 @@ class NewsForm
                     ->rows(10)
                     ->required()
                     ->columnSpanFull(),
-                FileUpload::make('image_path')
+                CatalogImageUpload::make('image_path')
                     ->label('Изображение')
                     ->disk('public')
                     ->directory('news')
-                    ->image()
-                    ->helperText('Можно загрузить файл или указать внешний URL ниже.'),
+                    ->helperText('JPG, PNG, WEBP или AVIF до 2 МБ. Можно также указать внешний URL ниже.'),
                 TextInput::make('image_url')
                     ->label('URL изображения')
                     ->url()

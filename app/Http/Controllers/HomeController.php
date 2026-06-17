@@ -7,6 +7,7 @@ use App\Models\MealSet;
 use App\Models\News;
 use App\Models\Product;
 use App\Models\SiteSetting;
+use App\Support\CatalogImageUrl;
 use Carbon\CarbonImmutable;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,7 +31,7 @@ class HomeController extends Controller
                 'slug' => $mealSet->slug,
                 'description' => $mealSet->description,
                 'price' => $mealSet->price,
-                'image' => $this->resolveImageUrl($mealSet->image_path),
+                'image' => CatalogImageUrl::resolve($mealSet->image_path),
                 'is_orderable' => $mealSet->is_available && $this->mealSetIsAvailableOn($mealSet, $menuDate),
                 'tags' => $this->serializeTags($mealSet->tags),
                 'items' => $mealSet->items->map(fn ($item): array => [
@@ -57,7 +58,10 @@ class HomeController extends Controller
                 'title' => $banner->title,
                 'description' => $banner->description,
                 'tag' => $banner->bannerTag && $banner->bannerTag->is_active ? $banner->bannerTag->name : null,
-                'image' => $this->resolveImageUrl($banner->image_url ?: $banner->image_path ?: $banner->mealSet?->image_path),
+                'image' => CatalogImageUrl::resolve(
+                    $banner->image_url ?: $banner->image_path ?: $banner->mealSet?->image_path,
+                    (int) config('catalog.images.hero_width', 1200),
+                ),
                 'link_url' => $banner->link_url,
                 'price' => $banner->mealSet?->price,
                 'meal_set' => $banner->mealSet
@@ -68,7 +72,7 @@ class HomeController extends Controller
                         'slug' => $banner->mealSet->slug,
                         'description' => $banner->mealSet->description,
                         'price' => $banner->mealSet->price,
-                        'image' => $this->resolveImageUrl($banner->mealSet->image_path),
+                        'image' => CatalogImageUrl::resolve($banner->mealSet->image_path),
                         'is_orderable' => $banner->mealSet->is_active
                             && $banner->mealSet->is_available
                             && $this->mealSetIsAvailableOn($banner->mealSet, $menuDate),
@@ -105,7 +109,7 @@ class HomeController extends Controller
                 'price' => $product->price,
                 'weight_grams' => $product->weight_grams,
                 'category_name' => $product->category?->name,
-                'image' => $this->resolveImageUrl($product->image_path),
+                'image' => CatalogImageUrl::resolve($product->image_path),
                 'tags' => $this->serializeTags($product->tags),
             ])
             ->values();
@@ -123,7 +127,7 @@ class HomeController extends Controller
                 'title' => $news->title,
                 'slug' => $news->slug,
                 'excerpt' => $news->excerpt,
-                'image' => $this->resolveImageUrl($news->image_url ?: $news->image_path),
+                'image' => CatalogImageUrl::resolve($news->image_url ?: $news->image_path),
                 'published_at' => $news->published_at?->toIso8601String(),
             ])
             ->values();
@@ -135,19 +139,6 @@ class HomeController extends Controller
             'latestNews' => $latestNews,
             'menuDate' => $menuDate,
         ]);
-    }
-
-    protected function resolveImageUrl(?string $path): ?string
-    {
-        if (! $path) {
-            return null;
-        }
-
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            return $path;
-        }
-
-        return asset('storage/'.$path);
     }
 
     protected function serializeTags($tags): array

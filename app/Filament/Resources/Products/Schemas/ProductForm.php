@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Filament\Forms\Components\CatalogImageUpload;
 use App\Filament\Forms\Components\MultiDatePicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -39,11 +39,10 @@ class ProductForm
                     ->required()
                     ->numeric()
                     ->suffix('коп.'),
-                FileUpload::make('image_path')
+                CatalogImageUpload::make('image_path')
                     ->label('Изображение')
                     ->disk('public')
-                    ->directory('products')
-                    ->image(),
+                    ->directory('products'),
                 TextInput::make('weight_grams')
                     ->label('Вес')
                     ->suffix('г')

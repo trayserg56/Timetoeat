@@ -1,13 +1,18 @@
 FROM php:8.5-fpm-alpine
 
 RUN apk add --no-cache \
+        freetype-dev \
         icu-dev \
+        libavif-dev \
+        libjpeg-turbo-dev \
         libpng-dev \
+        libwebp-dev \
         libzip-dev \
         linux-headers \
         oniguruma-dev \
         postgresql-dev \
         unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-avif \
     && docker-php-ext-install \
         bcmath \
         gd \
