@@ -1,0 +1,14 @@
+services:
+  nginx:
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+  app:
+    restart: unless-stopped
+
+  postgres:
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
