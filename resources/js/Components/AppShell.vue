@@ -2,7 +2,7 @@
 import AuthModal from './AuthModal.vue';
 import { cartApi } from '../composables/useCart';
 import { requestYandexCaptchaToken, resetYandexCaptchaWidget } from '../composables/useYandexCaptcha';
-import { authenticateTelegramWebApp, getTelegramInitData, getTelegramUser, initTelegramWebApp, isTelegramWebApp } from '../composables/useTelegramWebApp';
+import { authenticateTelegramWebApp, getTelegramInitData, getTelegramUser, initTelegramWebApp, isTelegramWebApp, shouldSkipCheckoutCaptcha } from '../composables/useTelegramWebApp';
 import { mailtoHref, phoneHref, telegramHref } from '../utils/contacts';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue';
@@ -38,6 +38,7 @@ const cartCatalogItems = computed(() => page.props.cartCatalogItems ?? []);
 const cartMenuDate = computed(() => page.props.cartMenuDate ?? '');
 const savedDeliveryAddressPresets = computed(() => authUser.value?.saved_delivery_addresses ?? []);
 const savedDeliveryCommentPresets = computed(() => authUser.value?.saved_delivery_comments ?? []);
+const skipCheckoutCaptcha = computed(() => shouldSkipCheckoutCaptcha(authUser.value));
 
 const toast = ref({ visible: false, message: '' });
 const checkoutCaptchaError = ref('');
@@ -770,9 +771,9 @@ async function submitOrder() {
 
     checkoutCaptchaError.value = '';
 
-    checkoutForm.telegram_init_data = isTelegramWebApp() ? getTelegramInitData() : '';
+    checkoutForm.telegram_init_data = getTelegramInitData();
 
-    if (yandexCaptcha.value.enabled && ! isTelegramWebApp()) {
+    if (yandexCaptcha.value.enabled && ! skipCheckoutCaptcha.value) {
         try {
             checkoutForm['smart-token'] = await requestYandexCaptchaToken({
                 containerId: 'checkout-captcha-container',
@@ -1708,7 +1709,7 @@ onBeforeUnmount(() => {
 
                     <div id="checkout-captcha-container" class="sr-only" aria-hidden="true"></div>
 
-                    <p v-if="yandexCaptcha.enabled" class="text-xs leading-5 text-stone-400">
+                    <p v-if="yandexCaptcha.enabled && !skipCheckoutCaptcha" class="text-xs leading-5 text-stone-400">
                         Оформление заказа защищено сервисом
                         <a href="https://yandex.ru/legal/smartcaptcha_notice/" class="underline hover:text-stone-600" target="_blank" rel="noopener noreferrer">Yandex SmartCaptcha</a>.
                     </p>

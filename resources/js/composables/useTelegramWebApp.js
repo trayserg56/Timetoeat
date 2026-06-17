@@ -7,7 +7,25 @@ function getTelegramWebApp() {
 }
 
 export function isTelegramWebApp() {
-    return Boolean(getTelegramWebApp()?.initData);
+    const tg = getTelegramWebApp();
+
+    if (! tg) {
+        return false;
+    }
+
+    if (tg.initData) {
+        return true;
+    }
+
+    return typeof tg.platform === 'string' && tg.platform !== 'unknown';
+}
+
+export function shouldSkipCheckoutCaptcha(authUser = null) {
+    if (isTelegramWebApp()) {
+        return true;
+    }
+
+    return Boolean(authUser?.telegram_id);
 }
 
 export function getTelegramInitData() {

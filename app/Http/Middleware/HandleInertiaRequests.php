@@ -36,6 +36,7 @@ class HandleInertiaRequests extends Middleware
                         'email' => $request->user()->email,
                         'phone' => $request->user()->phone,
                         'telegram_username' => $request->user()->telegram_username,
+                        'telegram_id' => $request->user()->telegram_id,
                         'saved_delivery_addresses' => $request->user()->saved_delivery_addresses ?? [],
                         'saved_delivery_comments' => $request->user()->saved_delivery_comments ?? [],
                     ]

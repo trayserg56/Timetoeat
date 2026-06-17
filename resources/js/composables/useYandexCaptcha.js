@@ -35,14 +35,29 @@ function ensureWidget(containerId, siteKey) {
         return widgetId;
     }
 
-    widgetId = window.smartCaptcha.render(containerId, {
-        sitekey: siteKey,
-        invisible: true,
-        hideShield: true,
-    });
+    try {
+        widgetId = window.smartCaptcha.render(containerId, {
+            sitekey: siteKey,
+            invisible: true,
+            hideShield: true,
+        });
+    } catch (error) {
+        throw mapCaptchaError(error);
+    }
+
     activeSiteKey = siteKey;
 
     return widgetId;
+}
+
+function mapCaptchaError(error) {
+    const message = String(error?.message ?? error ?? '');
+
+    if (message.includes('cannot be used in the host')) {
+        return new Error('Проверка безопасности не настроена для этого домена. Оформите заказ через Telegram-бот или напишите нам.');
+    }
+
+    return error instanceof Error ? error : new Error(message || 'Не удалось пройти проверку безопасности.');
 }
 
 export function resetYandexCaptchaWidget() {
@@ -58,7 +73,13 @@ export async function requestYandexCaptchaToken({ containerId, siteKey }) {
 
     await loadScript();
 
-    const id = ensureWidget(containerId, siteKey);
+    let id;
+
+    try {
+        id = ensureWidget(containerId, siteKey);
+    } catch (error) {
+        throw mapCaptchaError(error);
+    }
 
     if (id === null) {
         throw new Error('Не удалось инициализировать Yandex SmartCaptcha.');

@@ -114,6 +114,41 @@ class OrderPlacementTest extends TestCase
         Storage::disk('local')->assertExists($order->receipt_path);
     }
 
+    public function test_telegram_client_can_place_order_without_captcha_when_captcha_is_enabled(): void
+    {
+        Storage::fake('local');
+        Http::fake();
+
+        config()->set('services.yandex_captcha.server_key', 'test-server-key');
+        config()->set('services.yandex_captcha.client_key', 'test-client-key');
+
+        $this->seed();
+
+        $mealSet = MealSet::query()->firstOrFail();
+
+        $response = $this
+            ->withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Telegram/10.0',
+            ])
+            ->post('/orders', [
+                'customer_name' => 'Иван',
+                'customer_phone' => '8 (999) 000-00-00',
+                'customer_telegram_username' => 'ivan_customer',
+                'delivery_address' => 'ул. Тестовая, дом 1',
+                'receipt' => UploadedFile::fake()->create('receipt.pdf', 128, 'application/pdf'),
+                'items' => [
+                    [
+                        'type' => 'meal_set',
+                        'id' => $mealSet->id,
+                        'quantity' => 1,
+                    ],
+                ],
+            ]);
+
+        $response->assertRedirect('/');
+        $this->assertNotNull(Order::query()->first());
+    }
+
     public function test_order_is_sent_to_telegram_after_successful_checkout(): void
     {
         Storage::fake('local');

@@ -3,8 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\YandexSmartCaptcha;
-use App\Services\TelegramInitDataValidator;
-use App\Services\YandexSmartCaptchaVerifier;
+use App\Support\CheckoutCaptchaPolicy;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -53,11 +52,7 @@ class StoreOrderRequest extends FormRequest
 
     protected function captchaRequired(): bool
     {
-        if (! app(YandexSmartCaptchaVerifier::class)->isEnabled()) {
-            return false;
-        }
-
-        return ! app(TelegramInitDataValidator::class)->isValid($this->input('telegram_init_data'));
+        return app(CheckoutCaptchaPolicy::class)->isRequired($this);
     }
 
     public function messages(): array
