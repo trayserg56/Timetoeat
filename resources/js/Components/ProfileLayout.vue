@@ -24,7 +24,6 @@ const props = defineProps({
 });
 
 const page = usePage();
-const authUser = computed(() => page.props.auth?.user);
 const flashSuccess = computed(() => page.props.flash?.success);
 </script>
 
@@ -52,20 +51,6 @@ const flashSuccess = computed(() => page.props.flash?.success);
                                 : 'bg-white text-stone-800 shadow-sm hover:bg-orange-50 hover:text-orange-700'"
                         >
                             {{ item.label }}
-                        </Link>
-                    </div>
-
-                    <div class="mt-8 rounded-[1.6rem] bg-stone-50 px-5 py-4">
-                        <div class="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Аккаунт</div>
-                        <div class="mt-3 text-lg font-semibold text-stone-900">{{ authUser?.name }}</div>
-                        <div class="mt-1 text-sm text-stone-500">{{ authUser?.email }}</div>
-                        <Link
-                            href="/logout"
-                            method="post"
-                            as="button"
-                            class="mt-4 w-full rounded-full bg-white px-4 py-3 text-sm font-semibold shadow-sm transition hover:bg-stone-100"
-                        >
-                            Выйти
                         </Link>
                     </div>
                 </aside>

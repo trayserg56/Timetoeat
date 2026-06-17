@@ -1,25 +1,25 @@
 {
-  "_AppShell-DC6CbfXF.js": {
-    "file": "assets/AppShell-DC6CbfXF.js",
+  "_AppShell-CmFGjLZ7.js": {
+    "file": "assets/AppShell-CmFGjLZ7.js",
     "name": "AppShell",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_Breadcrumbs-DMu3hzxs.js": {
-    "file": "assets/Breadcrumbs-DMu3hzxs.js",
+  "_Breadcrumbs-Cd7OoHeq.js": {
+    "file": "assets/Breadcrumbs-Cd7OoHeq.js",
     "name": "Breadcrumbs",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_ProfileLayout-B8SegrMv.js": {
-    "file": "assets/ProfileLayout-B8SegrMv.js",
+  "_ProfileLayout-DCKmM7d6.js": {
+    "file": "assets/ProfileLayout-DCKmM7d6.js",
     "name": "ProfileLayout",
     "imports": [
       "resources/js/app.js",
-      "_AppShell-DC6CbfXF.js",
-      "_Breadcrumbs-DMu3hzxs.js"
+      "_AppShell-CmFGjLZ7.js",
+      "_Breadcrumbs-Cd7OoHeq.js"
     ]
   },
   "resources/css/app.css": {
@@ -32,90 +32,90 @@
     "isEntry": true
   },
   "resources/js/Pages/Contacts.vue": {
-    "file": "assets/Contacts-D-fmI393.js",
+    "file": "assets/Contacts-CajCAQNC.js",
     "name": "Contacts",
     "src": "resources/js/Pages/Contacts.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_AppShell-DC6CbfXF.js",
-      "_Breadcrumbs-DMu3hzxs.js"
+      "_AppShell-CmFGjLZ7.js",
+      "_Breadcrumbs-Cd7OoHeq.js"
     ]
   },
   "resources/js/Pages/Home.vue": {
-    "file": "assets/Home-C6z7tkqH.js",
+    "file": "assets/Home-CeolMwcQ.js",
     "name": "Home",
     "src": "resources/js/Pages/Home.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_AppShell-DC6CbfXF.js"
+      "_AppShell-CmFGjLZ7.js"
     ]
   },
   "resources/js/Pages/News/Index.vue": {
-    "file": "assets/Index-CKNEM6w4.js",
+    "file": "assets/Index-CChZyK0r.js",
     "name": "Index",
     "src": "resources/js/Pages/News/Index.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_AppShell-DC6CbfXF.js",
-      "_Breadcrumbs-DMu3hzxs.js"
+      "_AppShell-CmFGjLZ7.js",
+      "_Breadcrumbs-Cd7OoHeq.js"
     ]
   },
   "resources/js/Pages/News/Show.vue": {
-    "file": "assets/Show-BxBp31fh.js",
+    "file": "assets/Show-s4R0HudD.js",
     "name": "Show",
     "src": "resources/js/Pages/News/Show.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_AppShell-DC6CbfXF.js",
-      "_Breadcrumbs-DMu3hzxs.js"
+      "_AppShell-CmFGjLZ7.js",
+      "_Breadcrumbs-Cd7OoHeq.js"
     ]
   },
   "resources/js/Pages/Profile/OrderShow.vue": {
-    "file": "assets/OrderShow-B7GFjfro.js",
+    "file": "assets/OrderShow-Dh6KmaPR.js",
     "name": "OrderShow",
     "src": "resources/js/Pages/Profile/OrderShow.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_ProfileLayout-B8SegrMv.js"
+      "_ProfileLayout-DCKmM7d6.js"
     ]
   },
   "resources/js/Pages/Profile/Orders.vue": {
-    "file": "assets/Orders-p-JaPdK6.js",
+    "file": "assets/Orders-NpmZrW7h.js",
     "name": "Orders",
     "src": "resources/js/Pages/Profile/Orders.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_ProfileLayout-B8SegrMv.js"
+      "_ProfileLayout-DCKmM7d6.js"
     ]
   },
   "resources/js/Pages/Profile/Overview.vue": {
-    "file": "assets/Overview-Dbhv5zCE.js",
+    "file": "assets/Overview-BGAC7G-G.js",
     "name": "Overview",
     "src": "resources/js/Pages/Profile/Overview.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_ProfileLayout-B8SegrMv.js"
+      "_ProfileLayout-DCKmM7d6.js"
     ]
   },
   "resources/js/Pages/Profile/Settings.vue": {
-    "file": "assets/Settings-LjIrut2r.js",
+    "file": "assets/Settings-C8aNU_QC.js",
     "name": "Settings",
     "src": "resources/js/Pages/Profile/Settings.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_ProfileLayout-B8SegrMv.js"
+      "_ProfileLayout-DCKmM7d6.js"
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-f_0hN6mi.js",
+    "file": "assets/app-BjZYA-CO.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,

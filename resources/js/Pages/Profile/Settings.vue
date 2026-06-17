@@ -1,6 +1,6 @@
 <script setup>
 import ProfileLayout from '../../Components/ProfileLayout.vue';
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 const props = defineProps({
@@ -302,6 +302,20 @@ function submitPreferences() {
                     {{ preferencesForm.processing ? 'Сохраняем...' : 'Сохранить шаблоны' }}
                 </button>
             </form>
+        </section>
+
+        <section class="rounded-[2rem] bg-stone-50 p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
+            <div class="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Аккаунт</div>
+            <div class="mt-3 text-lg font-semibold text-stone-900">{{ profile.name }}</div>
+            <div class="mt-1 text-sm text-stone-500">{{ profile.email }}</div>
+            <Link
+                href="/logout"
+                method="post"
+                as="button"
+                class="mt-4 rounded-full bg-white px-6 py-3 text-sm font-semibold shadow-sm transition hover:bg-stone-100"
+            >
+                Выйти
+            </Link>
         </section>
     </ProfileLayout>
 </template>
