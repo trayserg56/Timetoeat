@@ -165,15 +165,15 @@ class OrderPlacementTest extends TestCase
 
             return $request->url() === 'https://api.telegram.org/bottest-bot-token/sendMessage'
                 && $data['chat_id'] === '-1001234567890'
-                && str_contains($data['text'], 'Новый заказ')
-                && str_contains($data['text'], 'Статус: Новый')
+                && str_contains($data['text'], '🆕')
+                && str_contains($data['text'], 'Статус заказа: <b>Новый</b>')
                 && str_contains($data['text'], 'Иван')
                 && str_contains($data['text'], '@ivan_customer')
                 && str_contains($data['text'], 'ул. Первая, дом 1')
                 && str_contains($data['text'], 'ул. Вторая, дом 2')
                 && str_contains($data['text'], $mealSet->name)
                 && str_contains($data['text'], $product->name)
-                && str_contains((string) $data['reply_markup'], 'Заказ принят');
+                && str_contains((string) $data['reply_markup'], '✅ Заказ принят');
         });
     }
 

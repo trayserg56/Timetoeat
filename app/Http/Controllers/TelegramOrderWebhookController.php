@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Services\TelegramOrderNotifier;
-use App\Support\OrderWebhookConfirmation;
+use App\Support\OrderTelegramWorkflow;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -43,14 +43,26 @@ class TelegramOrderWebhookController extends Controller
 
         [$action, $publicId] = array_pad(explode(':', $data, 2), 2, null);
 
-        if ($action !== 'confirm' || ! is_string($publicId) || $publicId === '') {
-            if ($action === 'confirmed') {
-                $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Заказ уже подтверждён.');
-            } elseif ($action === 'error') {
-                $telegramOrderNotifier->answerCallbackQuery($callbackId, 'При подтверждении уже была ошибка. Попробуйте ещё раз из админки.');
-            } else {
-                $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Не удалось обработать действие.');
-            }
+        if (! is_string($action) || ! is_string($publicId) || $publicId === '') {
+            $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Не удалось обработать действие.');
+
+            return response()->json(['ok' => true]);
+        }
+
+        if (in_array($action, ['confirmed', 'cancelled', 'error'], true)) {
+            $telegramOrderNotifier->answerCallbackQuery($callbackId, match ($action) {
+                'confirmed' => 'Заказ уже подтверждён.',
+                'cancelled' => 'Заказ уже отменён.',
+                default => 'При обновлении уже была ошибка. Попробуйте ещё раз из админки.',
+            });
+
+            return response()->json(['ok' => true]);
+        }
+
+        $targetStatus = OrderTelegramWorkflow::targetStatus($action);
+
+        if (! $targetStatus instanceof OrderStatus) {
+            $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Не удалось обработать действие.');
 
             return response()->json(['ok' => true]);
         }
@@ -66,37 +78,38 @@ class TelegramOrderWebhookController extends Controller
             return response()->json(['ok' => true]);
         }
 
-        if ($order->status === OrderStatus::Confirmed) {
-            $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Заказ уже подтверждён.');
+        if ($order->status === $targetStatus) {
+            $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Статус уже обновлён.');
             $telegramOrderNotifier->syncOrderMessage($order);
 
             return response()->json(['ok' => true]);
         }
 
-        if (! OrderWebhookConfirmation::canConfirm($order)) {
-            $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Заказ нельзя подтвердить в текущем статусе.');
+        if (! OrderTelegramWorkflow::canApply($order, $targetStatus)) {
+            $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Заказ нельзя перевести в этот статус.');
 
             return response()->json(['ok' => true]);
         }
 
         try {
             $order->update([
-                'status' => OrderStatus::Confirmed,
+                'status' => $targetStatus,
             ]);
         } catch (\Throwable $exception) {
-            Log::warning('Failed to confirm order from Telegram webhook.', [
+            Log::warning('Failed to update order status from Telegram webhook.', [
                 'order_id' => $order->id,
                 'order_number' => $order->number,
+                'target_status' => $targetStatus->value,
                 'message' => $exception->getMessage(),
             ]);
 
             $telegramOrderNotifier->syncOrderMessage($order, 'error');
-            $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Произошла ошибка при подтверждении заказа.');
+            $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Произошла ошибка при обновлении заказа.');
 
             return response()->json(['ok' => true]);
         }
 
-        $telegramOrderNotifier->answerCallbackQuery($callbackId, 'Заказ подтверждён.');
+        $telegramOrderNotifier->answerCallbackQuery($callbackId, OrderTelegramWorkflow::successMessage($targetStatus));
 
         return response()->json(['ok' => true]);
     }

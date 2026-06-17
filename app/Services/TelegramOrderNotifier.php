@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderDeliveryGroup;
 use App\Models\OrderItem;
@@ -52,13 +53,15 @@ class TelegramOrderNotifier
 
     public function syncOrderMessage(Order $order, ?string $actionState = null): bool
     {
+        if (! is_int($order->telegram_message_id) || ! is_string($order->telegram_chat_id) || $order->telegram_chat_id === '') {
+            $this->sendNewOrder($order);
+
+            return is_int($order->fresh()->telegram_message_id);
+        }
+
         $botToken = $this->botToken();
 
-        if (
-            ! is_string($botToken) || $botToken === ''
-            || ! is_string($order->telegram_chat_id) || $order->telegram_chat_id === ''
-            || ! is_int($order->telegram_message_id)
-        ) {
+        if (! is_string($botToken) || $botToken === '') {
             return false;
         }
 
@@ -85,6 +88,32 @@ class TelegramOrderNotifier
 
             return false;
         }
+    }
+
+    public function sendStatusChangeNotice(Order $order, OrderStatus $previousStatus): void
+    {
+        if ($previousStatus === $order->status) {
+            return;
+        }
+
+        $this->sendThreadNotice(
+            $order,
+            '🔄 <b>'.$this->escape($order->number).'</b>'."\n"
+            .$this->escape($previousStatus->getLabel()).' → <b>'.$this->escape($order->status->getLabel()).'</b>',
+        );
+    }
+
+    public function sendPaymentStatusChangeNotice(Order $order, PaymentStatus $previousStatus): void
+    {
+        if ($previousStatus === $order->payment_status) {
+            return;
+        }
+
+        $this->sendThreadNotice(
+            $order,
+            '💳 <b>'.$this->escape($order->number).'</b>'."\n"
+            .'Оплата: '.$this->escape($previousStatus->getLabel()).' → <b>'.$this->escape($order->payment_status->getLabel()).'</b>',
+        );
     }
 
     public function answerCallbackQuery(?string $callbackQueryId, string $text): bool
@@ -115,10 +144,43 @@ class TelegramOrderNotifier
         }
     }
 
+    protected function sendThreadNotice(Order $order, string $text): void
+    {
+        $botToken = $this->botToken();
+
+        if (
+            ! is_string($botToken) || $botToken === ''
+            || ! is_string($order->telegram_chat_id) || $order->telegram_chat_id === ''
+            || ! is_int($order->telegram_message_id)
+        ) {
+            return;
+        }
+
+        try {
+            Http::asForm()
+                ->timeout(10)
+                ->post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+                    'chat_id' => $order->telegram_chat_id,
+                    'text' => $text,
+                    'parse_mode' => 'HTML',
+                    'disable_web_page_preview' => true,
+                    'reply_to_message_id' => $order->telegram_message_id,
+                    'allow_sending_without_reply' => true,
+                ])
+                ->throw();
+        } catch (\Throwable $exception) {
+            Log::warning('Failed to send Telegram status change notice.', [
+                'order_id' => $order->id,
+                'order_number' => $order->number,
+                'message' => $exception->getMessage(),
+            ]);
+        }
+    }
+
     protected function buildMessage(Order $order): string
     {
         $lines = [
-            '<b>Новый заказ '.$this->escape($order->number).'</b>',
+            $this->buildMessageTitle($order),
             '',
             'Клиент: '.$this->escape($order->customer_name),
             'Телефон: '.$this->escape($order->customer_phone),
@@ -135,7 +197,8 @@ class TelegramOrderNotifier
         $lines[] = 'Сумма товаров: '.$this->formatPrice($order->subtotal);
         $lines[] = 'Доставка: '.$this->formatPrice($order->delivery_price);
         $lines[] = '<b>Итого: '.$this->formatPrice($order->total).'</b>';
-        $lines[] = 'Статус: '.$this->escape($order->status->getLabel());
+        $lines[] = 'Статус заказа: <b>'.$this->escape($order->status->getLabel()).'</b>';
+        $lines[] = 'Оплата: '.$this->escape($order->payment_status->getLabel());
         $lines[] = '';
 
         $lines = [
@@ -147,6 +210,21 @@ class TelegramOrderNotifier
         ];
 
         return implode("\n", $lines);
+    }
+
+    protected function buildMessageTitle(Order $order): string
+    {
+        $emoji = match ($order->status) {
+            OrderStatus::New => '🆕',
+            OrderStatus::Confirmed => '✅',
+            OrderStatus::Cooking => '👨‍🍳',
+            OrderStatus::Ready => '🍱',
+            OrderStatus::Delivering => '🚚',
+            OrderStatus::Completed => '✔️',
+            OrderStatus::Cancelled => '❌',
+        };
+
+        return $emoji.' <b>Заказ '.$this->escape($order->number).'</b>';
     }
 
     protected function formatGroup(OrderDeliveryGroup $group, int $number): array
@@ -222,7 +300,7 @@ class TelegramOrderNotifier
                 'inline_keyboard' => [
                     [
                         [
-                            'text' => '⚠️ Ошибка подтверждения',
+                            'text' => '⚠️ Ошибка обновления',
                             'callback_data' => 'error:'.$order->public_id,
                         ],
                     ],
@@ -230,29 +308,61 @@ class TelegramOrderNotifier
             ];
         }
 
-        if ($order->status === OrderStatus::Confirmed) {
-            return [
+        return match ($order->status) {
+            OrderStatus::New => [
                 'inline_keyboard' => [
                     [
-                        [
-                            'text' => '✅ Подтверждён',
-                            'callback_data' => 'confirmed:'.$order->public_id,
-                        ],
-                    ],
-                ],
-            ];
-        }
-
-        return [
-            'inline_keyboard' => [
-                [
-                    [
-                        'text' => 'Заказ принят',
-                        'callback_data' => 'confirm:'.$order->public_id,
+                        ['text' => '✅ Заказ принят', 'callback_data' => 'confirm:'.$order->public_id],
+                        ['text' => '❌ Отменить', 'callback_data' => 'cancel:'.$order->public_id],
                     ],
                 ],
             ],
-        ];
+            OrderStatus::Confirmed => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '👨‍🍳 Готовится', 'callback_data' => 'cooking:'.$order->public_id],
+                        ['text' => '❌ Отменить', 'callback_data' => 'cancel:'.$order->public_id],
+                    ],
+                ],
+            ],
+            OrderStatus::Cooking => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '🍱 Готов', 'callback_data' => 'ready:'.$order->public_id],
+                        ['text' => '❌ Отменить', 'callback_data' => 'cancel:'.$order->public_id],
+                    ],
+                ],
+            ],
+            OrderStatus::Ready => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '🚚 В доставке', 'callback_data' => 'delivering:'.$order->public_id],
+                        ['text' => '❌ Отменить', 'callback_data' => 'cancel:'.$order->public_id],
+                    ],
+                ],
+            ],
+            OrderStatus::Delivering => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '✔️ Завершён', 'callback_data' => 'complete:'.$order->public_id],
+                    ],
+                ],
+            ],
+            OrderStatus::Completed => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '✔️ Завершён', 'callback_data' => 'completed:'.$order->public_id],
+                    ],
+                ],
+            ],
+            OrderStatus::Cancelled => [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '❌ Отменён', 'callback_data' => 'cancelled:'.$order->public_id],
+                    ],
+                ],
+            ],
+        };
     }
 
     protected function escape(string $value): string
