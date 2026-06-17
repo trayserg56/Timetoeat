@@ -55,6 +55,6 @@ class OrderAuthorizationTest extends TestCase
 
         $this->actingAs($user)
             ->get('/admin')
-            ->assertForbidden();
+            ->assertRedirect('/admin/login');
     }
 }

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'phone', 'telegram_id', 'telegram_username', 'saved_delivery_addresses', 'saved_delivery_comments', 'password'])]
+#[Fillable(['name', 'email', 'phone', 'telegram_id', 'telegram_username', 'saved_delivery_addresses', 'saved_delivery_comments', 'password', 'is_admin', 'email_verified_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
@@ -48,6 +48,6 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->isAdmin() && $this->hasVerifiedEmail();
+        return $this->isAdmin();
     }
 }
