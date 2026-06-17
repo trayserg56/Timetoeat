@@ -27,6 +27,14 @@ const isRegisterMode = computed(() => currentMode.value === 'register');
 const isForgotPasswordMode = computed(() => currentMode.value === 'forgot-password');
 const isResetPasswordMode = computed(() => currentMode.value === 'reset-password');
 
+const registerGeneralErrors = computed(() => {
+    const errors = { ...registerForm.errors };
+
+    delete errors.email;
+
+    return errors;
+});
+
 const loginForm = useForm({
     email: '',
     password: '',
@@ -366,6 +374,9 @@ async function submitRegister() {
                             type="email"
                             class="w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 outline-none transition focus:border-orange-500"
                         />
+                        <p v-if="registerForm.errors.email" class="mt-2 text-sm text-red-700">
+                            {{ registerForm.errors.email }}
+                        </p>
                     </label>
 
                     <label class="block">
@@ -412,10 +423,10 @@ async function submitRegister() {
                     </label>
 
                     <div
-                        v-if="Object.keys(registerForm.errors).length"
+                        v-if="registerGeneralErrors.length"
                         class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 sm:col-span-2"
                     >
-                        <div v-for="(error, key) in registerForm.errors" :key="key">
+                        <div v-for="(error, key) in registerGeneralErrors" :key="key">
                             {{ error }}
                         </div>
                     </div>

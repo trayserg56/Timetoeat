@@ -47,8 +47,25 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'name.required' => 'Укажите имя.',
+            'email.required' => 'Укажите email.',
+            'email.email' => 'Укажите корректный email.',
+            'email.unique' => 'Пользователь с таким email уже зарегистрирован. Попробуйте войти или укажите другой email.',
             'telegram_username.required' => 'Укажите Telegram-ник.',
             'telegram_username.regex' => 'Укажите Telegram-ник в формате @username.',
+            'password.required' => 'Укажите пароль.',
+            'password.confirmed' => 'Пароли не совпадают.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'name' => 'имя',
+            'email' => 'email',
+            'phone' => 'телефон',
+            'telegram_username' => 'Telegram',
+            'password' => 'пароль',
         ];
     }
 }

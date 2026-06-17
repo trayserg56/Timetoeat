@@ -36,6 +36,26 @@ class ProfileTest extends TestCase
         $this->get('/profile')->assertOk();
     }
 
+    public function test_registration_returns_readable_error_for_duplicate_email(): void
+    {
+        User::factory()->create([
+            'email' => 'exists@example.com',
+        ]);
+
+        $response = $this->from('/')->post('/register', [
+            'name' => 'Новый пользователь',
+            'email' => 'exists@example.com',
+            'telegram_username' => '@new_user_telegram',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertRedirect('/');
+        $response->assertSessionHasErrors([
+            'email' => 'Пользователь с таким email уже зарегистрирован. Попробуйте войти или укажите другой email.',
+        ]);
+    }
+
     public function test_user_can_login_and_stay_on_same_page(): void
     {
         $user = User::factory()->create([
