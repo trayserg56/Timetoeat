@@ -102,6 +102,12 @@ bash scripts/deploy.sh
 
 Публичный ключ деплоя должен быть в `~/.ssh/authorized_keys` на сервере.
 
+Быстрая настройка секретов (после `gh auth login`):
+
+```bash
+bash scripts/set-github-secrets.sh
+```
+
 ### CI/CD
 
 Workflow `.github/workflows/deploy.yml` подключается по SSH и запускает `scripts/deploy.sh`: `git pull`, сборка frontend, миграции, кеш Laravel, перезапуск контейнеров.
