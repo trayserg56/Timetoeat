@@ -4,10 +4,12 @@ namespace App\Filament\Resources\MealSets\Schemas;
 
 use App\Filament\Forms\Components\MultiDatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
@@ -85,6 +87,37 @@ class MealSetForm
                     ->required()
                     ->numeric()
                     ->default(0),
+                Section::make('Состав набора')
+                    ->description('Добавьте блюда сразу при создании или редактировании набора.')
+                    ->schema([
+                        Repeater::make('items')
+                            ->relationship()
+                            ->label('Блюда')
+                            ->schema([
+                                Select::make('product_id')
+                                    ->label('Блюдо')
+                                    ->relationship(
+                                        name: 'product',
+                                        titleAttribute: 'name',
+                                        modifyQueryUsing: fn ($query) => $query->where('is_active', true)->orderBy('name'),
+                                    )
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(),
+                                TextInput::make('quantity')
+                                    ->label('Количество')
+                                    ->required()
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(1),
+                            ])
+                            ->reorderable()
+                            ->orderColumn('sort_order')
+                            ->addActionLabel('Добавить блюдо')
+                            ->defaultItems(0)
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
             ]);
     }
 }

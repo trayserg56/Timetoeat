@@ -5,7 +5,6 @@ namespace App\Filament\Resources\MealSets;
 use App\Filament\Resources\MealSets\Pages\CreateMealSet;
 use App\Filament\Resources\MealSets\Pages\EditMealSet;
 use App\Filament\Resources\MealSets\Pages\ListMealSets;
-use App\Filament\Resources\MealSets\RelationManagers\ItemsRelationManager;
 use App\Filament\Resources\MealSets\Schemas\MealSetForm;
 use App\Filament\Resources\MealSets\Tables\MealSetsTable;
 use App\Models\MealSet;
@@ -39,9 +38,7 @@ class MealSetResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            ItemsRelationManager::class,
-        ];
+        return [];
     }
 
     public static function getPages(): array
