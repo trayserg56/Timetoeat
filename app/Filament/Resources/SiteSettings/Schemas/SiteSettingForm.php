@@ -78,7 +78,13 @@ class SiteSettingForm
                             ->required(),
                         TextInput::make('contact_telegram')
                             ->label('Telegram')
-                            ->required(),
+                            ->required()
+                            ->helperText('Отображаемый @username или название канала.'),
+                        TextInput::make('contact_telegram_url')
+                            ->label('Ссылка на Telegram')
+                            ->url()
+                            ->placeholder('https://t.me/food_delivery')
+                            ->helperText('Если пусто, ссылка соберётся автоматически из @username.'),
                         Textarea::make('contact_address')
                             ->label('Адрес / зона доставки')
                             ->required()

@@ -1,14 +1,23 @@
 <script setup>
 import AppShell from '../Components/AppShell.vue';
 import Breadcrumbs from '../Components/Breadcrumbs.vue';
+import { mailtoHref, phoneHref, telegramHref } from '../utils/contacts';
 import { Head } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-defineProps({
+const props = defineProps({
     contacts: {
         type: Object,
         required: true,
     },
 });
+
+const resolvedContacts = computed(() => ({
+    ...props.contacts,
+    phone_href: props.contacts.phone_href ?? phoneHref(props.contacts.phone),
+    email_href: props.contacts.email_href ?? mailtoHref(props.contacts.email),
+    telegram_href: props.contacts.telegram_href ?? telegramHref(props.contacts.telegram_url, props.contacts.telegram),
+}));
 </script>
 
 <template>
@@ -25,7 +34,7 @@ defineProps({
                 />
                 <p class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Контакты</p>
                 <h1 class="text-3xl font-black tracking-[-0.04em] text-stone-950 sm:text-4xl lg:text-5xl">Как с нами связаться</h1>
-                <p class="text-lg leading-8 text-stone-700">
+                <p class="text-lg leading-6 text-stone-700">
                     Если нужно уточнить детали заказа, доставку или меню, здесь собраны основные каналы связи.
                 </p>
             </div>
@@ -36,15 +45,38 @@ defineProps({
                     <div class="mt-6 space-y-5">
                         <div>
                             <div class="text-sm text-stone-500">Телефон</div>
-                            <div class="mt-1 text-2xl font-bold text-stone-950">{{ contacts.phone }}</div>
+                            <a
+                                v-if="resolvedContacts.phone_href"
+                                :href="resolvedContacts.phone_href"
+                                class="mt-1 block text-2xl font-bold text-stone-950 transition hover:text-orange-700"
+                            >
+                                {{ resolvedContacts.phone }}
+                            </a>
+                            <div v-else class="mt-1 text-2xl font-bold text-stone-950">{{ resolvedContacts.phone }}</div>
                         </div>
                         <div>
                             <div class="text-sm text-stone-500">Email</div>
-                            <div class="mt-1 text-2xl font-bold text-stone-950">{{ contacts.email }}</div>
+                            <a
+                                v-if="resolvedContacts.email_href"
+                                :href="resolvedContacts.email_href"
+                                class="mt-1 block text-2xl font-bold text-stone-950 transition hover:text-orange-700"
+                            >
+                                {{ resolvedContacts.email }}
+                            </a>
+                            <div v-else class="mt-1 text-2xl font-bold text-stone-950">{{ resolvedContacts.email }}</div>
                         </div>
                         <div>
                             <div class="text-sm text-stone-500">Telegram</div>
-                            <div class="mt-1 text-2xl font-bold text-stone-950">{{ contacts.telegram }}</div>
+                            <a
+                                v-if="resolvedContacts.telegram_href"
+                                :href="resolvedContacts.telegram_href"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="mt-1 block text-2xl font-bold text-stone-950 transition hover:text-orange-700"
+                            >
+                                {{ resolvedContacts.telegram }}
+                            </a>
+                            <div v-else class="mt-1 text-2xl font-bold text-stone-950">{{ resolvedContacts.telegram }}</div>
                         </div>
                     </div>
                 </section>

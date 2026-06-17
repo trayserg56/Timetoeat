@@ -6,6 +6,7 @@ use App\Models\MealSet;
 use App\Models\Product;
 use App\Models\SiteMenuItem;
 use App\Models\SiteSetting;
+use App\Support\ContactLinks;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -45,12 +46,7 @@ class HandleInertiaRequests extends Middleware
                 'order' => $request->session()->get('order'),
                 'repeat_order' => $request->session()->get('repeat_order'),
             ],
-            'siteContacts' => [
-                'phone' => $siteSettings->contact_phone,
-                'email' => $siteSettings->contact_email,
-                'telegram' => $siteSettings->contact_telegram,
-                'footer_description' => $siteSettings->footer_description,
-            ],
+            'siteContacts' => ContactLinks::fromSiteSetting($siteSettings),
             'siteNavigation' => SiteMenuItem::query()
                 ->where('is_active', true)
                 ->orderBy('sort_order')

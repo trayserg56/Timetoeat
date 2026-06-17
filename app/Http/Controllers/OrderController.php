@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderSourceChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\StoreOrderRequest;
@@ -11,6 +12,7 @@ use App\Models\OrderDeliveryGroup;
 use App\Models\Product;
 use App\Models\SiteSetting;
 use App\Services\MaxOrderNotifier;
+use App\Services\TelegramInitDataValidator;
 use App\Services\TelegramOrderNotifier;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -30,6 +32,9 @@ class OrderController extends Controller
         $deliveryAt = CarbonImmutable::now('Europe/Moscow')->addDay();
         $siteSettings = SiteSetting::current();
         $requestMetadata = $this->captureRequestMetadata($request);
+        $sourceChannel = app(TelegramInitDataValidator::class)->isValid($request->input('telegram_init_data'))
+            ? OrderSourceChannel::TelegramWebApp
+            : OrderSourceChannel::Website;
 
         if ($this->isPastOrderCutoff($siteSettings)) {
             return back()->withErrors([
@@ -75,7 +80,7 @@ class OrderController extends Controller
 
         $receiptPath = $request->file('receipt')->store('receipts', 'local');
 
-        DB::transaction(function () use ($validated, $normalizedGroups, $products, $mealSets, $receiptPath, $deliveryAt, $siteSettings, $requestMetadata, &$createdOrderNumber, &$createdOrderId): void {
+        DB::transaction(function () use ($validated, $normalizedGroups, $products, $mealSets, $receiptPath, $deliveryAt, $siteSettings, $requestMetadata, $sourceChannel, &$createdOrderNumber, &$createdOrderId): void {
             $preparedGroups = $normalizedGroups->map(function (array $group) use ($products, $mealSets, $siteSettings): array {
                 $items = collect($group['items']);
                 $subtotal = $this->calculateSubtotal($items, $products, $mealSets);
@@ -102,6 +107,7 @@ class OrderController extends Controller
                 'source_ip' => $requestMetadata['source_ip'],
                 'source_forwarded_for' => $requestMetadata['source_forwarded_for'],
                 'source_user_agent' => $requestMetadata['source_user_agent'],
+                'source_channel' => $sourceChannel,
                 'customer_email' => $validated['customer_email'] ?? null,
                 'delivery_address' => $groupsCount === 1
                     ? $firstGroup['delivery_address']
@@ -154,6 +160,7 @@ class OrderController extends Controller
                 'source_ip' => $order->source_ip,
                 'source_forwarded_for' => $order->source_forwarded_for,
                 'source_user_agent' => $order->source_user_agent,
+                'source_channel' => $order->source_channel?->value,
             ]);
 
             $telegramOrderNotifier->sendNewOrder($order);

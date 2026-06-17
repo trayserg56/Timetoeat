@@ -1,6 +1,13 @@
 <script setup>
 import AppShell from '../Components/AppShell.vue';
 import { useCart } from '../composables/useCart';
+import {
+    isCatalogItemOrderable,
+    normalizeCatalogItem,
+    resolveCatalogImageLayout,
+    unavailableCatalogItemLabel,
+} from '../utils/catalogItem';
+import { formatPrice } from '../utils/money';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
@@ -30,6 +37,8 @@ const props = defineProps({
 const cartApi = useCart();
 
 const selectedCatalogItem = ref(null);
+const selectedItemImageLayout = ref(null);
+const selectedItemImageLoaded = ref(false);
 const currentHeroSlide = ref(0);
 
 const menuDateLabel = computed(() =>
@@ -86,14 +95,6 @@ const activeHeroSlide = computed(() => heroSlides.value[currentHeroSlide.value] 
 
 let heroSliderInterval = null;
 
-function formatPrice(value) {
-    return new Intl.NumberFormat('ru-RU', {
-        style: 'currency',
-        currency: 'RUB',
-        maximumFractionDigits: 0,
-    }).format(value / 100);
-}
-
 function formatNewsDate(value) {
     if (!value) {
         return '';
@@ -107,28 +108,59 @@ function formatNewsDate(value) {
 }
 
 function openItemModal(item) {
-    selectedCatalogItem.value = {
-        ...item,
-        entityType: item.entityType ?? item.type,
-    };
+    selectedItemImageLayout.value = null;
+    selectedItemImageLoaded.value = false;
+    selectedCatalogItem.value = normalizeCatalogItem(item);
 }
 
 function closeItemModal() {
     selectedCatalogItem.value = null;
+    selectedItemImageLayout.value = null;
+    selectedItemImageLoaded.value = false;
 }
 
-function isItemOrderable(item) {
-    return item?.is_orderable !== false;
+function handleSelectedItemImageLoad(event) {
+    const img = event.target;
+
+    selectedItemImageLoaded.value = true;
+
+    selectedItemImageLayout.value = resolveCatalogImageLayout(img?.naturalWidth, img?.naturalHeight);
+}
+
+function handleSelectedItemImageError() {
+    selectedItemImageLoaded.value = true;
+    selectedItemImageLayout.value = null;
 }
 
 function isSelectedItemOrderable() {
-    return isItemOrderable(selectedCatalogItem.value);
+    return isCatalogItemOrderable(selectedCatalogItem.value);
 }
 
-function unavailableMealSetLabel(item) {
-    return item?.entityType === 'meal_set'
-        ? 'Недоступен к заказу на завтра'
-        : 'Недоступно к заказу';
+const selectedItemCartQuantity = computed(() => {
+    cartApi.cartCount;
+
+    const item = selectedCatalogItem.value;
+
+    if (!item) {
+        return 0;
+    }
+
+    return cartApi.getPrimaryGroupCartQuantity(item.entityType, item.id);
+});
+
+function updateSelectedItemQuantity(nextQuantity) {
+    const item = selectedCatalogItem.value;
+
+    if (!item || !isSelectedItemOrderable()) {
+        return;
+    }
+
+    cartApi.updateQuantity(
+        item.entityType,
+        item.id,
+        nextQuantity,
+        cartApi.primaryCartGroup?.id,
+    );
 }
 
 function addSelectedItemToCart() {
@@ -137,7 +169,6 @@ function addSelectedItemToCart() {
     }
 
     cartApi.addToCart(selectedCatalogItem.value.entityType, selectedCatalogItem.value.id);
-    closeItemModal();
 }
 
 function openHeroSlide(slide) {
@@ -220,7 +251,7 @@ onBeforeUnmount(() => {
                             <span class="text-orange-600">на {{ menuDateLabel }}</span>
                             за пару минут.
                         </h1>
-                        <p class="max-w-2xl text-lg leading-8 text-stone-700">
+                        <p class="max-w-2xl text-lg leading-6 text-stone-700">
                             Каждый день здесь публикуется новое меню на завтра: готовые наборы и дополнительные блюда, которые можно быстро собрать в один заказ.
                         </p>
                     </div>
@@ -405,7 +436,7 @@ onBeforeUnmount(() => {
                     <article
                         v-for="product in extraProducts"
                         :key="product.id"
-                        class="group cursor-pointer overflow-hidden rounded-[2rem] bg-white shadow-[0_16px_50px_rgba(15,23,42,0.06)] ring-1 ring-stone-100 transition hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)]"
+                        class="group flex h-full cursor-pointer flex-col overflow-hidden rounded-[2rem] bg-white shadow-[0_16px_50px_rgba(15,23,42,0.06)] ring-1 ring-stone-100 transition hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)]"
                         role="button"
                         tabindex="0"
                         @click="openItemModal(product)"
@@ -444,15 +475,17 @@ onBeforeUnmount(() => {
                                 </div>
                             </div>
                         </div>
-                        <div class="space-y-5 p-6">
-                            <p class="min-h-12 text-sm leading-6 text-stone-600">
+                        <div class="flex flex-1 flex-col p-6">
+                            <p class="min-h-12 text-sm leading-6 text-stone-600 line-clamp-2">
                                 {{ product.description || 'Можно добавить к любому набору или заказать отдельно.' }}
                             </p>
-                            <p v-if="product.ingredients" class="text-xs leading-5 text-stone-500">
-                                <span class="font-semibold text-stone-700">Состав:</span>
-                                {{ product.ingredients }}
+                            <p class="mt-5 min-h-10 text-xs leading-5 text-stone-500 line-clamp-2">
+                                <template v-if="product.ingredients">
+                                    <span class="font-semibold text-stone-700">Состав:</span>
+                                    {{ ' ' }}{{ product.ingredients }}
+                                </template>
                             </p>
-                            <div class="flex items-center justify-between gap-4">
+                            <div class="mt-auto flex items-center justify-between gap-4 pt-5">
                                 <div class="text-2xl font-black text-stone-950">{{ formatPrice(product.price) }}</div>
                                 <div
                                     v-if="cartApi.getPrimaryGroupCartQuantity('product', product.id)"
@@ -534,66 +567,83 @@ onBeforeUnmount(() => {
             role="dialog"
             aria-modal="true"
         >
-            <div class="flex min-h-full justify-center px-4 py-4 sm:px-6 sm:py-8">
+            <div class="flex min-h-full items-end justify-center sm:items-center sm:px-6 sm:py-8">
                 <div class="absolute inset-0" @click="closeItemModal"></div>
-                <div class="relative my-auto w-full max-w-3xl rounded-[2rem] bg-white shadow-[0_24px_80px_rgba(28,25,23,0.3)]">
-                <button
-                    type="button"
-                    class="absolute right-4 top-4 z-10 inline-flex size-11 items-center justify-center rounded-full bg-stone-950/30 text-white backdrop-blur transition hover:bg-stone-950/50 sm:right-5 sm:top-5"
-                    @click="closeItemModal"
+                <div class="relative w-full max-w-3xl bg-white shadow-[0_24px_80px_rgba(28,25,23,0.3)] sm:my-auto sm:rounded-[2rem]">
+                <div
+                    class="sticky z-30 h-0 overflow-visible"
+                    style="top: max(0px, env(safe-area-inset-top));"
                 >
-                    <span class="text-xl leading-none">×</span>
-                </button>
-                <div class="relative h-56 overflow-hidden rounded-t-[2rem] sm:h-72">
-                    <img
-                        v-if="selectedCatalogItem.image"
-                        :src="selectedCatalogItem.image"
-                        :alt="selectedCatalogItem.name"
-                        class="size-full object-cover"
-                        decoding="async"
-                    />
+                    <button
+                        type="button"
+                        class="absolute right-3 top-3 inline-flex size-10 items-center justify-center rounded-full bg-white/95 text-stone-900 shadow-md ring-1 ring-black/5 transition hover:bg-white sm:right-5 sm:top-5 sm:size-11"
+                        @click="closeItemModal"
+                    >
+                        <span class="text-xl leading-none">×</span>
+                    </button>
+                </div>
+                <div class="relative isolate min-h-60 overflow-hidden bg-stone-200 sm:min-h-72 sm:rounded-t-[2rem]">
+                    <div
+                        v-if="selectedCatalogItem.image && !selectedItemImageLoaded"
+                        class="absolute inset-0 animate-pulse bg-gradient-to-br from-stone-100 via-stone-200 to-orange-50"
+                        aria-hidden="true"
+                    ></div>
+                    <template v-if="selectedCatalogItem.image">
+                        <template v-if="selectedItemImageLoaded && selectedItemImageLayout === 'portrait'">
+                            <img
+                                :src="selectedCatalogItem.image"
+                                alt=""
+                                aria-hidden="true"
+                                class="absolute inset-0 size-full scale-110 object-cover blur-2xl saturate-125"
+                            />
+                            <div class="absolute inset-0 bg-white/40"></div>
+                        </template>
+                        <img
+                            :src="selectedCatalogItem.image"
+                            :alt="selectedCatalogItem.name"
+                            class="relative z-10 mx-auto block max-h-60 w-full object-contain transition-opacity duration-300 sm:max-h-72"
+                            :class="[
+                                selectedItemImageLayout === 'portrait' ? 'w-auto max-w-full' : '',
+                                selectedItemImageLoaded ? 'opacity-100' : 'opacity-0',
+                            ]"
+                            decoding="async"
+                            @load="handleSelectedItemImageLoad"
+                            @error="handleSelectedItemImageError"
+                        />
+                    </template>
                     <div
                         v-else
-                        class="size-full"
+                        class="h-60 w-full sm:h-72"
                         :class="selectedCatalogItem.entityType === 'meal_set'
                             ? 'bg-[linear-gradient(135deg,#fed7aa,#fb923c,#7c2d12)]'
                             : 'bg-stone-950'"
                     ></div>
-                    <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/50 to-transparent"></div>
-                    <div class="absolute inset-x-0 bottom-0 p-5 pr-20 text-white sm:p-8 sm:pr-24">
-                        <div>
-                            <div class="flex flex-wrap gap-2">
-                                <div class="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
-                                    {{ selectedCatalogItem.entityType === 'meal_set' ? 'Набор' : 'Блюдо' }}
-                                </div>
-                                <div
-                                    v-for="tag in selectedCatalogItem.tags"
-                                    :key="tag.id"
-                                    class="inline-flex rounded-full bg-orange-500 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-white"
-                                >
-                                    {{ tag.name }}
-                                </div>
-                                <div
-                                    v-if="!isSelectedItemOrderable()"
-                                    class="inline-flex rounded-full bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-stone-900"
-                                >
-                                    {{ unavailableMealSetLabel(selectedCatalogItem) }}
-                                </div>
-                            </div>
-                            <h2 class="mt-4 text-2xl font-black tracking-[-0.04em] sm:text-3xl lg:text-4xl">{{ selectedCatalogItem.name }}</h2>
-                            <p class="mt-4 max-w-2xl text-sm leading-7 text-white/90">
-                                {{
-                                    selectedCatalogItem.description
-                                        || (selectedCatalogItem.entityType === 'meal_set'
-                                            ? 'Готовая комбинация для быстрого и понятного заказа.'
-                                            : 'Можно заказать отдельно или добавить к любому набору.')
-                                }}
-                            </p>
-                        </div>
-                    </div>
                 </div>
 
-                <div class="grid gap-6 p-5 sm:gap-8 sm:p-8 lg:grid-cols-[1.2fr_0.8fr]">
+                <div class="px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 sm:rounded-b-[2rem] sm:px-8 sm:pb-8 sm:pt-6">
+                    <div class="flex flex-wrap gap-2">
+                        <div class="inline-flex rounded-full bg-stone-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-700">
+                            {{ selectedCatalogItem.entityType === 'meal_set' ? 'Набор' : 'Блюдо' }}
+                        </div>
+                        <div
+                            v-for="tag in selectedCatalogItem.tags"
+                            :key="tag.id"
+                            class="inline-flex rounded-full bg-orange-500 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-white"
+                        >
+                            {{ tag.name }}
+                        </div>
+                    </div>
+                    <h2 class="mt-3 text-2xl font-black tracking-[-0.04em] text-stone-950 sm:mt-4 sm:text-3xl lg:text-4xl">{{ selectedCatalogItem.name }}</h2>
+                    <p class="mt-2 max-w-2xl text-sm leading-6 text-stone-600 sm:mt-3 sm:text-base">
+                        {{
+                            selectedCatalogItem.description
+                                || (selectedCatalogItem.entityType === 'meal_set'
+                                    ? 'Готовая комбинация для быстрого и понятного заказа.'
+                                    : 'Можно заказать отдельно или добавить к любому набору.')
+                        }}
+                    </p>
+
+                <div class="mt-5 grid gap-5 sm:mt-6 sm:gap-8 lg:grid-cols-[1.2fr_0.8fr]">
                     <div>
                         <template v-if="selectedCatalogItem.entityType === 'meal_set'">
                             <div class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Что входит в набор</div>
@@ -642,23 +692,40 @@ onBeforeUnmount(() => {
                         </template>
                     </div>
 
-                    <div class="rounded-[1.5rem] bg-white p-5 ring-1 ring-stone-100">
+                    <div class="self-start rounded-[1.5rem] bg-white p-5 ring-1 ring-stone-100">
                         <div class="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Стоимость</div>
                         <div class="mt-3 text-3xl font-black tracking-[-0.04em] text-stone-950">
                             {{ formatPrice(selectedCatalogItem.price) }}
                         </div>
-                        <p class="mt-3 max-w-xs text-sm leading-6 text-stone-600">
-                            {{
-                                !isSelectedItemOrderable()
-                                    ? 'Эта позиция показывается в каталоге, но пока недоступна к заказу на завтра.'
-                                    : (selectedCatalogItem.entityType === 'meal_set'
-                                        ? 'Добавьте набор целиком в корзину одним нажатием.'
-                                        : 'Позиция добавляется как отдельный товар к вашему заказу.')
-                            }}
+                        <p v-if="!isSelectedItemOrderable()" class="mt-3 text-sm leading-6 text-stone-600">
+                            Эта позиция показывается в каталоге, но пока недоступна к заказу на завтра.
                         </p>
+                        <div
+                            v-if="isSelectedItemOrderable() && selectedItemCartQuantity > 0"
+                            class="mt-4 inline-flex h-11 w-full items-center justify-center gap-3 rounded-full bg-stone-950 px-4 text-white"
+                        >
+                            <button
+                                type="button"
+                                class="inline-flex size-8 items-center justify-center rounded-full text-lg font-medium text-white transition hover:bg-white/15"
+                                @click="updateSelectedItemQuantity(selectedItemCartQuantity - 1)"
+                            >
+                                -
+                            </button>
+                            <span class="min-w-8 text-center text-sm font-semibold text-white">
+                                {{ selectedItemCartQuantity }}
+                            </span>
+                            <button
+                                type="button"
+                                class="inline-flex size-8 items-center justify-center rounded-full text-lg font-medium text-white transition hover:bg-white/15"
+                                @click="updateSelectedItemQuantity(selectedItemCartQuantity + 1)"
+                            >
+                                +
+                            </button>
+                        </div>
                         <button
+                            v-else
                             type="button"
-                            class="mt-5 inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition"
+                            class="mt-4 inline-flex h-11 w-full items-center justify-center rounded-full px-5 text-sm font-semibold transition"
                             :class="isSelectedItemOrderable()
                                 ? 'bg-stone-950 text-white hover:bg-orange-600'
                                 : 'cursor-not-allowed bg-stone-200 text-stone-500'"
@@ -668,10 +735,11 @@ onBeforeUnmount(() => {
                             {{
                                 isSelectedItemOrderable()
                                     ? (selectedCatalogItem.entityType === 'meal_set' ? 'Добавить набор в корзину' : 'Добавить в корзину')
-                                    : unavailableMealSetLabel(selectedCatalogItem)
+                                    : unavailableCatalogItemLabel(selectedCatalogItem)
                             }}
                         </button>
                     </div>
+                </div>
                 </div>
                 </div>
             </div>

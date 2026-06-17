@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrderSourceChannel;
 use App\Models\MealSet;
 use App\Models\Order;
 use App\Models\Product;
@@ -85,6 +86,7 @@ class OrderPlacementTest extends TestCase
         $this->assertSame('203.0.113.10', $order->source_ip);
         $this->assertSame('203.0.113.10, 172.19.0.1', $order->source_forwarded_for);
         $this->assertSame('OrderPlacementTest/1.0', $order->source_user_agent);
+        $this->assertSame(OrderSourceChannel::Website, $order->source_channel);
         $this->assertSame(
             CarbonImmutable::now('Europe/Moscow')->addDay()->toDateString(),
             $order->delivery_date?->toDateString() ?? $order->delivery_date,

@@ -28,7 +28,8 @@
         <div class="min-h-screen bg-[linear-gradient(180deg,#fbf3e6_0%,#fffdf8_28%,#f5ead8_100%)] text-stone-900">
             <div class="absolute inset-x-0 top-0 -z-10 h-[28rem] bg-[radial-gradient(circle_at_top_left,#ffb36b_0%,transparent_38%),radial-gradient(circle_at_top_right,#ffd7a8_0%,transparent_32%)]"></div>
 
-            <header class="mx-auto grid max-w-7xl grid-cols-1 items-center gap-4 px-6 py-6 lg:grid-cols-[auto_1fr_auto]">
+            <header class="sticky top-0 z-40 border-b border-stone-200/80 bg-[#fffdf8]/95 backdrop-blur-md supports-[backdrop-filter]:bg-[#fffdf8]/80">
+                <div class="mx-auto grid max-w-7xl grid-cols-1 items-center gap-4 px-6 py-6 lg:grid-cols-[auto_1fr_auto]">
                 <a href="{{ route('home') }}" class="flex items-center gap-3">
                     <div class="flex size-11 items-center justify-center rounded-2xl bg-stone-950 text-sm font-black text-white">
                         FD
@@ -69,6 +70,7 @@
                         </a>
                     @endauth
                 </nav>
+                </div>
             </header>
 
             <main class="mx-auto max-w-7xl px-6 pb-16 pt-4">
@@ -82,7 +84,7 @@
                             Страница потерялась по дороге.
                         </h1>
 
-                        <p class="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
+                        <p class="mt-5 max-w-2xl text-lg leading-6 text-stone-600">
                             Похоже, ссылка устарела или адрес был введён с ошибкой. Ничего страшного:
                             можно быстро вернуться на главную, открыть новости или перейти к контактам.
                         </p>
@@ -125,9 +127,22 @@
                             <div class="rounded-3xl bg-white/8 p-5">
                                 <div class="text-sm font-semibold text-orange-200">Связаться с нами</div>
                                 <div class="mt-2 space-y-2 text-sm leading-7 text-white/75">
-                                    <p>{{ $siteSettings->contact_phone }}</p>
-                                    <p>{{ $siteSettings->contact_email }}</p>
-                                    <p>{{ $siteSettings->contact_telegram }}</p>
+                                    @php($contactLinks = \App\Support\ContactLinks::fromSiteSetting($siteSettings))
+                                    @if ($contactLinks['phone_href'])
+                                        <a href="{{ $contactLinks['phone_href'] }}" class="block transition hover:text-white">{{ $contactLinks['phone'] }}</a>
+                                    @else
+                                        <p>{{ $contactLinks['phone'] }}</p>
+                                    @endif
+                                    @if ($contactLinks['email_href'])
+                                        <a href="{{ $contactLinks['email_href'] }}" class="block transition hover:text-white">{{ $contactLinks['email'] }}</a>
+                                    @else
+                                        <p>{{ $contactLinks['email'] }}</p>
+                                    @endif
+                                    @if ($contactLinks['telegram_href'])
+                                        <a href="{{ $contactLinks['telegram_href'] }}" target="_blank" rel="noopener noreferrer" class="block transition hover:text-white">{{ $contactLinks['telegram'] }}</a>
+                                    @else
+                                        <p>{{ $contactLinks['telegram'] }}</p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -173,9 +188,22 @@
                         <div class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Контакты</div>
 
                         <div class="mt-4 space-y-3 text-sm text-stone-700">
-                            <p>{{ $siteSettings->contact_email }}</p>
-                            <p>{{ $siteSettings->contact_phone }}</p>
-                            <p>{{ $siteSettings->contact_telegram }}</p>
+                            @php($footerContactLinks ??= \App\Support\ContactLinks::fromSiteSetting($siteSettings))
+                            @if ($footerContactLinks['email_href'])
+                                <a href="{{ $footerContactLinks['email_href'] }}" class="block transition hover:text-stone-950">{{ $footerContactLinks['email'] }}</a>
+                            @elseif ($footerContactLinks['email'])
+                                <p>{{ $footerContactLinks['email'] }}</p>
+                            @endif
+                            @if ($footerContactLinks['phone_href'])
+                                <a href="{{ $footerContactLinks['phone_href'] }}" class="block transition hover:text-stone-950">{{ $footerContactLinks['phone'] }}</a>
+                            @elseif ($footerContactLinks['phone'])
+                                <p>{{ $footerContactLinks['phone'] }}</p>
+                            @endif
+                            @if ($footerContactLinks['telegram_href'])
+                                <a href="{{ $footerContactLinks['telegram_href'] }}" target="_blank" rel="noopener noreferrer" class="block transition hover:text-stone-950">{{ $footerContactLinks['telegram'] }}</a>
+                            @elseif ($footerContactLinks['telegram'])
+                                <p>{{ $footerContactLinks['telegram'] }}</p>
+                            @endif
                             <p>{{ $siteSettings->contact_address }}</p>
                         </div>
                     </div>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderSourceChannel;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +22,7 @@ class Order extends Model
         'source_ip',
         'source_forwarded_for',
         'source_user_agent',
+        'source_channel',
         'customer_email',
         'delivery_address',
         'delivery_date',
@@ -46,6 +48,7 @@ class Order extends Model
         return [
             'status' => OrderStatus::class,
             'payment_status' => PaymentStatus::class,
+            'source_channel' => OrderSourceChannel::class,
             'delivery_date' => 'date',
             'telegram_message_id' => 'integer',
             'receipt_uploaded_at' => 'datetime',

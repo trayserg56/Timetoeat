@@ -45,9 +45,19 @@ $COMPOSE run --rm app php artisan view:cache
 
 echo "==> Restart application"
 COMPOSE="docker compose -f compose.yaml -f compose.prod.yaml"
+APP_URL="$(grep '^APP_URL=' .env | cut -d= -f2- | tr -d '\"' | tr -d '\r')"
+
 if bash scripts/ensure-ssl-config.sh; then
   COMPOSE="$COMPOSE -f compose.ssl.yaml"
+  echo "==> SSL enabled for nginx"
+else
+  if [[ "$APP_URL" == https://* ]]; then
+    echo "ERROR: APP_URL uses HTTPS but SSL config could not be restored."
+    exit 1
+  fi
+  echo "==> SSL skipped (HTTP only)"
 fi
+
 $COMPOSE up -d app nginx
 
 APP_URL="$(grep '^APP_URL=' .env | cut -d= -f2- | tr -d '\"')"

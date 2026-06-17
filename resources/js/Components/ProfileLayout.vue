@@ -32,16 +32,16 @@ const flashSuccess = computed(() => page.props.flash?.success);
     <Head :title="props.title" />
 
     <AppShell compact>
-        <section class="py-4">
-            <div class="max-w-5xl">
+        <section class="min-w-0 py-4">
+            <div class="max-w-5xl min-w-0">
                 <Breadcrumbs :items="props.breadcrumbs" />
                 <h1 class="text-3xl font-black tracking-[-0.04em] text-stone-950 sm:text-4xl lg:text-5xl">{{ props.title }}</h1>
-                <p class="mt-3 text-base leading-7 text-stone-500 sm:mt-4 sm:text-lg sm:leading-8">{{ props.subtitle }}</p>
+                <p class="mt-3 text-base leading-6 text-stone-500 sm:mt-4 sm:text-lg sm:leading-6">{{ props.subtitle }}</p>
             </div>
 
-            <div class="mt-8 grid items-start gap-8 xl:grid-cols-[320px_1fr]">
-                <aside class="self-start rounded-[2rem] bg-white p-4 shadow-[0_24px_80px_rgba(28,25,23,0.08)] sm:p-5 xl:sticky xl:top-28">
-                    <div class="flex gap-2 overflow-x-auto pb-1 xl:flex-col xl:gap-0 xl:space-y-4 xl:overflow-visible xl:pb-0">
+            <div class="mt-8 grid min-w-0 items-start gap-8 xl:grid-cols-[320px_minmax(0,1fr)]">
+                <aside class="min-w-0 max-w-full self-start rounded-[2rem] bg-white p-4 shadow-[0_24px_80px_rgba(28,25,23,0.08)] sm:p-5 xl:sticky xl:top-28">
+                    <div class="flex min-w-0 max-w-full gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] xl:flex-col xl:gap-0 xl:space-y-4 xl:overflow-visible xl:pb-0">
                         <Link
                             v-for="item in props.navigation"
                             :key="item.key"
@@ -70,7 +70,7 @@ const flashSuccess = computed(() => page.props.flash?.success);
                     </div>
                 </aside>
 
-                <div class="space-y-6">
+                <div class="min-w-0 space-y-6">
                     <div v-if="flashSuccess" class="rounded-[1.8rem] bg-emerald-50 px-6 py-5 text-emerald-900 shadow-sm">
                         {{ flashSuccess }}
                     </div>

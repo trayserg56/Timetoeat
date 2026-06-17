@@ -29,6 +29,11 @@ class OrdersTable
                 TextColumn::make('customer_telegram_username')
                     ->label('Telegram')
                     ->searchable(),
+                TextColumn::make('source_channel')
+                    ->label('Источник')
+                    ->badge()
+                    ->formatStateUsing(fn ($state): string => $state?->getLabel() ?? 'Сайт')
+                    ->toggleable(),
                 TextColumn::make('customer_email')
                     ->searchable(),
                 TextColumn::make('delivery_date')

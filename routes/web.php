@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordWithCodeController;
 use App\Http\Controllers\Auth\PasswordResetCodeController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\TelegramWebAppAuthController;
 use App\Http\Controllers\AdminOrderReceiptController;
 use App\Http\Controllers\ContactsController;
 use App\Http\Controllers\HomeController;
@@ -25,6 +26,9 @@ Route::post('/telegram/orders/webhook/{secret}', TelegramOrderWebhookController:
     ->name('telegram.orders.webhook');
 Route::post('/max/orders/webhook/{secret}', MaxOrderWebhookController::class)
     ->name('max.orders.webhook');
+Route::post('/auth/telegram/webapp', [TelegramWebAppAuthController::class, 'store'])
+    ->middleware('throttle:telegram-webapp-auth')
+    ->name('auth.telegram.webapp');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');

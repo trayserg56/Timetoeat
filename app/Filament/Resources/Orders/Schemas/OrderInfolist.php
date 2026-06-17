@@ -53,6 +53,9 @@ class OrderInfolist
                         TextEntry::make('customer_telegram_username')
                             ->label('Telegram')
                             ->copyable(),
+                        TextEntry::make('source_channel')
+                            ->label('Источник')
+                            ->badge(),
                         TextEntry::make('customer_email')
                             ->label('Email')
                             ->placeholder('-'),

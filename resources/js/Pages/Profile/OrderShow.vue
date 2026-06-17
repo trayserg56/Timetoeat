@@ -51,7 +51,7 @@ function formatDate(value) {
             { label: order.number },
         ]"
     >
-        <section class="rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
+        <section class="min-w-0 rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
             <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-5">
                 <div class="min-w-0">
                     <div class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Детали заказа</div>
@@ -103,7 +103,7 @@ function formatDate(value) {
             </div>
         </section>
 
-        <section class="rounded-[2rem] bg-white p-8 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100">
+        <section class="min-w-0 rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <div class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Что заказали</div>

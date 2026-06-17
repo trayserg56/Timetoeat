@@ -44,8 +44,8 @@ function formatDate(value) {
             { label: 'Заказы' },
         ]"
     >
-        <section class="rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
-            <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:flex-wrap sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0">
+        <section class="min-w-0 rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
+            <div class="flex min-w-0 max-w-full gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] sm:flex-wrap sm:gap-3 sm:overflow-visible sm:pb-0">
                 <Link
                     v-for="option in filters.options"
                     :key="option.value"

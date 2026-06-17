@@ -1,3 +1,5 @@
+import { router } from '@inertiajs/vue3';
+
 let initialized = false;
 
 function getTelegramWebApp() {
@@ -6,6 +8,10 @@ function getTelegramWebApp() {
 
 export function isTelegramWebApp() {
     return Boolean(getTelegramWebApp()?.initData);
+}
+
+export function getTelegramInitData() {
+    return getTelegramWebApp()?.initData ?? '';
 }
 
 export function getTelegramUser() {
@@ -19,7 +25,7 @@ export function getTelegramUser() {
         id: user.id,
         firstName: user.first_name ?? '',
         lastName: user.last_name ?? '',
-        username: user.username ? `@${user.username}` : '',
+        username: user.username ? `@${user.username}` : `@tg${user.id}`,
     };
 }
 
@@ -52,4 +58,38 @@ export function initTelegramWebApp() {
     document.body.classList.add('telegram-webapp');
 
     return tg;
+}
+
+export async function authenticateTelegramWebApp() {
+    const initData = getTelegramInitData();
+
+    if (! initData || typeof window === 'undefined') {
+        return false;
+    }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+    if (! csrfToken) {
+        return false;
+    }
+
+    const response = await fetch('/auth/telegram/webapp', {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ init_data: initData }),
+    });
+
+    if (! response.ok) {
+        return false;
+    }
+
+    await router.reload({ only: ['auth'] });
+
+    return true;
 }

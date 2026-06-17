@@ -37,7 +37,7 @@ function formatDate(value) {
                 />
                 <p class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Новости</p>
                 <h1 class="text-3xl font-black tracking-[-0.04em] text-stone-950 sm:text-4xl lg:text-5xl">Обновления сервиса и меню</h1>
-                <p class="text-lg leading-8 text-stone-700">
+                <p class="text-lg leading-6 text-stone-700">
                     Здесь будем публиковать важные новости, изменения меню и полезные анонсы для клиентов.
                 </p>
             </div>
@@ -56,7 +56,7 @@ function formatDate(value) {
                     <div class="space-y-4 p-6">
                         <div class="text-sm text-stone-500">{{ formatDate(item.published_at) }}</div>
                         <h2 class="text-xl font-black leading-tight text-stone-950 sm:text-2xl">{{ item.title }}</h2>
-                        <p class="text-sm leading-6 text-stone-600">{{ item.excerpt }}</p>
+                        <p class="text-sm leading-5 text-stone-600">{{ item.excerpt }}</p>
                     </div>
                     </Link>
                 </article>

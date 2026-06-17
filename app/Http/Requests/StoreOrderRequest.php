@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Rules\YandexSmartCaptcha;
+use App\Services\TelegramInitDataValidator;
+use App\Services\YandexSmartCaptchaVerifier;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -42,8 +44,20 @@ class StoreOrderRequest extends FormRequest
             'order_groups.*.items.*.type' => ['required', Rule::in(['product', 'meal_set'])],
             'order_groups.*.items.*.id' => ['required', 'integer', 'min:1'],
             'order_groups.*.items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
-            'smart-token' => [new YandexSmartCaptcha],
+            'telegram_init_data' => ['nullable', 'string', 'max:4096'],
+            'smart-token' => [
+                ...($this->captchaRequired() ? ['required', new YandexSmartCaptcha] : ['nullable']),
+            ],
         ];
+    }
+
+    protected function captchaRequired(): bool
+    {
+        if (! app(YandexSmartCaptchaVerifier::class)->isEnabled()) {
+            return false;
+        }
+
+        return ! app(TelegramInitDataValidator::class)->isValid($this->input('telegram_init_data'));
     }
 
     public function messages(): array

@@ -31,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('orders', fn (Request $request) => Limit::perHour(10)->by($request->ip()));
         RateLimiter::for('register', fn (Request $request) => Limit::perHour(5)->by($request->ip()));
+        RateLimiter::for('telegram-webapp-auth', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
         RateLimiter::for('password-reset-verify', function (Request $request): Limit {
             $email = strtolower((string) $request->input('email', ''));
 

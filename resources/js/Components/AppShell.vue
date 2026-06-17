@@ -2,7 +2,8 @@
 import AuthModal from './AuthModal.vue';
 import { cartApi } from '../composables/useCart';
 import { requestYandexCaptchaToken, resetYandexCaptchaWidget } from '../composables/useYandexCaptcha';
-import { getTelegramUser, initTelegramWebApp } from '../composables/useTelegramWebApp';
+import { authenticateTelegramWebApp, getTelegramInitData, getTelegramUser, initTelegramWebApp, isTelegramWebApp } from '../composables/useTelegramWebApp';
+import { mailtoHref, phoneHref, telegramHref } from '../utils/contacts';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue';
 
@@ -17,6 +18,16 @@ const page = usePage();
 const authUser = computed(() => page.props.auth?.user);
 const siteNavigation = computed(() => page.props.siteNavigation ?? []);
 const siteContacts = computed(() => page.props.siteContacts ?? {});
+const resolvedSiteContacts = computed(() => {
+    const contacts = siteContacts.value;
+
+    return {
+        ...contacts,
+        phone_href: contacts.phone_href ?? phoneHref(contacts.phone),
+        email_href: contacts.email_href ?? mailtoHref(contacts.email),
+        telegram_href: contacts.telegram_href ?? telegramHref(contacts.telegram_url, contacts.telegram),
+    };
+});
 const flashSuccess = computed(() => page.props.flash?.success);
 const flashOrder = computed(() => page.props.flash?.order);
 const flashRepeatOrder = computed(() => page.props.flash?.repeat_order);
@@ -61,6 +72,7 @@ const checkoutForm = useForm({
     customer_email: '',
     receipt: null,
     order_groups: [],
+    telegram_init_data: '',
     'smart-token': '',
 });
 
@@ -758,7 +770,9 @@ async function submitOrder() {
 
     checkoutCaptchaError.value = '';
 
-    if (yandexCaptcha.value.enabled) {
+    checkoutForm.telegram_init_data = isTelegramWebApp() ? getTelegramInitData() : '';
+
+    if (yandexCaptcha.value.enabled && ! isTelegramWebApp()) {
         try {
             checkoutForm['smart-token'] = await requestYandexCaptchaToken({
                 containerId: 'checkout-captcha-container',
@@ -1041,8 +1055,13 @@ if (typeof window !== 'undefined') {
     window.addEventListener('app:auth-modal', handleAuthModalEvent);
 }
 
-onMounted(() => {
+onMounted(async () => {
     initTelegramWebApp();
+
+    if (! authUser.value && isTelegramWebApp()) {
+        await authenticateTelegramWebApp();
+    }
+
     applyTelegramCheckoutDefaults();
 
     const savedCart = window.localStorage.getItem(storageKey);
@@ -1102,7 +1121,8 @@ onBeforeUnmount(() => {
 <template>
     <div class="min-h-screen bg-white text-stone-900">
 
-        <header class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+        <header class="fixed inset-x-0 top-0 z-40 bg-white">
+            <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
             <div class="flex items-center justify-between gap-3">
                 <Link href="/" class="flex min-w-0 items-center gap-2.5 sm:gap-3 lg:shrink-0">
                     <div class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-stone-950 text-sm font-black text-white sm:size-11">
@@ -1215,7 +1235,10 @@ onBeforeUnmount(() => {
                     </Link>
                 </nav>
             </transition>
+            </div>
         </header>
+
+        <div aria-hidden="true" class="h-[4.75rem] sm:h-[5.75rem]"></div>
 
         <!-- Toast -->
         <transition
@@ -1249,7 +1272,7 @@ onBeforeUnmount(() => {
             </div>
         </transition>
 
-        <main :class="compact ? 'mx-auto max-w-7xl px-6 pb-16' : ''">
+        <main :class="compact ? 'mx-auto min-w-0 max-w-7xl overflow-x-clip px-4 pb-16 sm:px-6' : ''">
             <slot />
         </main>
 
@@ -1266,7 +1289,7 @@ onBeforeUnmount(() => {
                         </div>
                     </Link>
                     <p class="max-w-md text-sm leading-7 text-stone-600">
-                        {{ siteContacts.footer_description || 'Готовые наборы и блюда на следующий день, понятное оформление заказа и быстрый доступ к новостям сервиса.' }}
+                        {{ resolvedSiteContacts.footer_description || 'Готовые наборы и блюда на следующий день, понятное оформление заказа и быстрый доступ к новостям сервиса.' }}
                     </p>
                 </div>
 
@@ -1287,9 +1310,32 @@ onBeforeUnmount(() => {
                 <div>
                     <div class="text-sm font-semibold uppercase tracking-[0.18em] text-stone-500">Контакты</div>
                     <div class="mt-4 space-y-3 text-sm text-stone-700">
-                        <p>{{ siteContacts.email }}</p>
-                        <p>{{ siteContacts.phone }}</p>
-                        <p>{{ siteContacts.telegram }}</p>
+                        <a
+                            v-if="resolvedSiteContacts.email_href"
+                            :href="resolvedSiteContacts.email_href"
+                            class="block transition hover:text-stone-950"
+                        >
+                            {{ resolvedSiteContacts.email }}
+                        </a>
+                        <p v-else-if="resolvedSiteContacts.email">{{ resolvedSiteContacts.email }}</p>
+                        <a
+                            v-if="resolvedSiteContacts.phone_href"
+                            :href="resolvedSiteContacts.phone_href"
+                            class="block transition hover:text-stone-950"
+                        >
+                            {{ resolvedSiteContacts.phone }}
+                        </a>
+                        <p v-else-if="resolvedSiteContacts.phone">{{ resolvedSiteContacts.phone }}</p>
+                        <a
+                            v-if="resolvedSiteContacts.telegram_href"
+                            :href="resolvedSiteContacts.telegram_href"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="block transition hover:text-stone-950"
+                        >
+                            {{ resolvedSiteContacts.telegram }}
+                        </a>
+                        <p v-else-if="resolvedSiteContacts.telegram">{{ resolvedSiteContacts.telegram }}</p>
                     </div>
                 </div>
             </div>

@@ -17,6 +17,8 @@ class ContactsPageTest extends TestCase
         $response->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Contacts')
-                ->where('contacts.telegram', '@food_delivery'));
+                ->where('contacts.telegram', '@food_delivery')
+                ->where('contacts.telegram_href', 'https://t.me/food_delivery')
+                ->where('contacts.phone_href', 'tel:+79990000001'));
     }
 }

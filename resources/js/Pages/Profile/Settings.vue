@@ -148,8 +148,8 @@ function submitPreferences() {
             { label: 'Настройки профиля' },
         ]"
     >
-        <section class="grid gap-6 xl:grid-cols-2">
-            <div class="rounded-[2rem] bg-white p-8 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100">
+        <section class="grid min-w-0 gap-6 xl:grid-cols-2">
+            <div class="min-w-0 rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
                 <div class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Контакты</div>
                 <h2 class="mt-3 text-2xl font-black tracking-[-0.04em] text-stone-950 sm:text-3xl lg:text-4xl">Профиль</h2>
 
@@ -181,7 +181,7 @@ function submitPreferences() {
                 </form>
             </div>
 
-            <div class="rounded-[2rem] bg-white p-8 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100">
+            <div class="min-w-0 rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
                 <div class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Безопасность</div>
                 <h2 class="mt-3 text-2xl font-black tracking-[-0.04em] text-stone-950 sm:text-3xl lg:text-4xl">Пароль</h2>
 
@@ -210,7 +210,7 @@ function submitPreferences() {
             </div>
         </section>
 
-        <section class="mt-6 rounded-[2rem] bg-white p-8 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100">
+        <section class="mt-6 min-w-0 rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
             <div class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Шаблоны</div>
             <h2 class="mt-3 text-2xl font-black tracking-[-0.04em] text-stone-950 sm:text-3xl lg:text-4xl">Сохранённые адреса и комментарии</h2>
             <p class="mt-3 max-w-3xl text-base leading-7 text-stone-600">
@@ -218,7 +218,7 @@ function submitPreferences() {
             </p>
 
             <form class="mt-8 space-y-8" @submit.prevent="submitPreferences">
-                <div class="grid gap-8 xl:grid-cols-2">
+                <div class="grid min-w-0 gap-8 xl:grid-cols-2">
                     <section>
                         <div class="flex items-center justify-between gap-4">
                             <h3 class="text-2xl font-black tracking-[-0.03em] text-stone-950">Адреса</h3>

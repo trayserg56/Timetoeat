@@ -203,9 +203,20 @@ make down
 make migrate
 make fresh
 make test
+make test-front
 make lint
 make shell
+npm run test
+npm run test:watch
 ```
+
+### CI
+
+GitHub Actions workflow `.github/workflows/ci.yml`:
+
+- **Backend** — `php artisan test` (50 тестов, SQLite in-memory)
+- **Frontend** — `npm run test` (Vitest + Vue Test Utils)
+- **Deploy** — только после успешных тестов, на push в `main`
 
 ## План развития
 

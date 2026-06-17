@@ -1,6 +1,6 @@
 DC = docker compose
 
-.PHONY: init up down restart build install migrate fresh test lint shell
+.PHONY: init up down restart build install migrate fresh test test-front lint shell
 
 init:
 	cp -n .env.example .env || true
@@ -37,6 +37,9 @@ fresh:
 
 test:
 	$(DC) run --rm app php artisan test
+
+test-front:
+	npm run test
 
 lint:
 	$(DC) run --rm app ./vendor/bin/pint --test

@@ -47,8 +47,8 @@ function formatDate(value) {
             { label: 'Личный кабинет' },
         ]"
     >
-        <section class="grid gap-6 md:grid-cols-2">
-            <div class="rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
+        <section class="grid min-w-0 gap-6 md:grid-cols-2">
+            <div class="min-w-0 rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
                 <div class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Профиль</div>
                 <div class="mt-4 text-2xl font-black tracking-[-0.04em] text-stone-950 sm:text-3xl">{{ profile.name }}</div>
                 <div class="mt-3 text-base text-stone-500">{{ profile.email }}</div>
@@ -56,7 +56,7 @@ function formatDate(value) {
                 <div class="mt-1 text-base text-stone-500">{{ profile.telegram_username || 'Telegram не указан' }}</div>
             </div>
 
-            <div class="rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
+            <div class="min-w-0 rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
                 <div class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Активность</div>
                 <div class="mt-4 text-4xl font-black tracking-[-0.05em] text-stone-950 sm:text-5xl">{{ stats.orders_count }}</div>
                 <div class="mt-2 text-base text-stone-500">заказов сохранено в вашем профиле</div>
@@ -66,7 +66,7 @@ function formatDate(value) {
             </div>
         </section>
 
-        <section class="rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
+        <section class="min-w-0 rounded-[2rem] bg-white p-5 shadow-[0_20px_60px_rgba(28,25,23,0.06)] ring-1 ring-stone-100 sm:p-8">
             <div class="flex items-end justify-between gap-4">
                 <div>
                     <div class="text-sm font-semibold uppercase tracking-[0.18em] text-orange-700">Последние заказы</div>

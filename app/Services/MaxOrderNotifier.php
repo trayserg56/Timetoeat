@@ -144,6 +144,7 @@ class MaxOrderNotifier
             'Клиент: '.$this->escape($order->customer_name),
             'Телефон: '.$this->escape($order->customer_phone),
             'Telegram: '.$this->escape($order->customer_telegram_username),
+            'Источник: '.$this->escape($order->source_channel?->getLabel() ?? 'Сайт'),
         ];
 
         if ($order->customer_email) {

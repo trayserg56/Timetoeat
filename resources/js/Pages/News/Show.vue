@@ -50,8 +50,8 @@ function formatDate(value) {
                         <h1 class="text-2xl font-black leading-tight tracking-[-0.04em] text-stone-950 sm:text-3xl lg:text-4xl">{{ news.title }}</h1>
                         <div class="text-sm text-stone-500">{{ formatDate(news.published_at) }}</div>
                     </div>
-                    <p v-if="news.excerpt" class="text-lg leading-8 text-stone-700">{{ news.excerpt }}</p>
-                    <div class="whitespace-pre-line text-base leading-8 text-stone-700">{{ news.content }}</div>
+                    <p v-if="news.excerpt" class="text-lg leading-6 text-stone-700">{{ news.excerpt }}</p>
+                    <div class="whitespace-pre-line text-base leading-6 text-stone-700">{{ news.content }}</div>
                 </div>
             </article>
 
@@ -81,7 +81,7 @@ function formatDate(value) {
                                     ></div>
                                 </div>
                                 <div>
-                                    <div class="font-semibold leading-7 text-stone-900">{{ item.title }}</div>
+                                    <div class="font-semibold leading-6 text-stone-900">{{ item.title }}</div>
                                     <div class="mt-1 text-sm text-stone-500">{{ formatDate(item.published_at) }}</div>
                                 </div>
                             </div>
