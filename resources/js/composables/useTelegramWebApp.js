@@ -1,16 +1,58 @@
 import { router } from '@inertiajs/vue3';
 
 let initialized = false;
+let scriptLoadPromise = null;
+
+const TELEGRAM_SCRIPT_SRC = 'https://telegram.org/js/telegram-web-app.js';
 
 function getTelegramWebApp() {
     return window.Telegram?.WebApp ?? null;
+}
+
+export function isLikelyTelegramWebAppContext() {
+    if (typeof navigator === 'undefined') {
+        return false;
+    }
+
+    return /Telegram/i.test(navigator.userAgent);
+}
+
+export function loadTelegramWebAppScript() {
+    if (typeof window === 'undefined') {
+        return Promise.resolve(null);
+    }
+
+    const existing = getTelegramWebApp();
+
+    if (existing) {
+        return Promise.resolve(existing);
+    }
+
+    if (! isLikelyTelegramWebAppContext()) {
+        return Promise.resolve(null);
+    }
+
+    if (scriptLoadPromise) {
+        return scriptLoadPromise;
+    }
+
+    scriptLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = TELEGRAM_SCRIPT_SRC;
+        script.async = true;
+        script.onload = () => resolve(getTelegramWebApp());
+        script.onerror = () => reject(new Error('Failed to load Telegram WebApp SDK'));
+        document.head.appendChild(script);
+    });
+
+    return scriptLoadPromise;
 }
 
 export function isTelegramWebApp() {
     const tg = getTelegramWebApp();
 
     if (! tg) {
-        return false;
+        return isLikelyTelegramWebAppContext();
     }
 
     if (tg.initData) {
@@ -47,6 +89,12 @@ export function getTelegramUser() {
     };
 }
 
+export async function ensureTelegramWebAppReady() {
+    await loadTelegramWebAppScript();
+
+    return initTelegramWebApp();
+}
+
 export function initTelegramWebApp() {
     if (initialized || typeof window === 'undefined') {
         return getTelegramWebApp();
@@ -79,6 +127,8 @@ export function initTelegramWebApp() {
 }
 
 export async function authenticateTelegramWebApp() {
+    await loadTelegramWebAppScript();
+
     const initData = getTelegramInitData();
 
     if (! initData || typeof window === 'undefined') {

@@ -8,6 +8,7 @@ use App\Models\News;
 use App\Models\Product;
 use App\Models\SiteSetting;
 use App\Support\CatalogImageUrl;
+use App\Support\LcpPreload;
 use Carbon\CarbonImmutable;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -131,6 +132,10 @@ class HomeController extends Controller
                 'published_at' => $news->published_at?->toIso8601String(),
             ])
             ->values();
+
+        LcpPreload::share(
+            $banners->first()['image'] ?? $mealSets->first()['image'] ?? null,
+        );
 
         return Inertia::render('Home', [
             'banners' => $banners,

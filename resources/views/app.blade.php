@@ -7,7 +7,15 @@
 
         <title inertia>{{ config('app.name') }}</title>
 
-        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        <link rel="preconnect" href="https://images.pexels.com" crossorigin>
+        <link rel="dns-prefetch" href="https://images.pexels.com">
+        @if (! empty($lcpPreloadOrigin) && $lcpPreloadOrigin !== 'https://images.pexels.com')
+            <link rel="preconnect" href="{{ $lcpPreloadOrigin }}" crossorigin>
+        @endif
+        @if (! empty($lcpPreloadImage))
+            <link rel="preload" as="image" href="{{ $lcpPreloadImage }}" fetchpriority="high">
+        @endif
+
         @vite('resources/js/app.js')
         @inertiaHead
     </head>

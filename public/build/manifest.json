@@ -1,4 +1,11 @@
 {
+  "_AppShell-CMBdlnqt.js": {
+    "file": "assets/AppShell-CMBdlnqt.js",
+    "name": "AppShell",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
   "resources/css/app.css": {
     "file": "assets/app-9EzCSSsc.css",
     "name": "app",
@@ -8,11 +15,35 @@
     "src": "resources/css/app.css",
     "isEntry": true
   },
+  "resources/js/Pages/Contacts.vue": {
+    "file": "assets/Contacts-uS1SYIDg.js",
+    "name": "Contacts",
+    "src": "resources/js/Pages/Contacts.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppShell-CMBdlnqt.js"
+    ]
+  },
+  "resources/js/Pages/Home.vue": {
+    "file": "assets/Home-C29tFLat.js",
+    "name": "Home",
+    "src": "resources/js/Pages/Home.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_AppShell-CMBdlnqt.js"
+    ]
+  },
   "resources/js/app.js": {
-    "file": "assets/app-Cb3zIrnZ.js",
+    "file": "assets/app-zNQDvt7_.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
+    "dynamicImports": [
+      "resources/js/Pages/Contacts.vue",
+      "resources/js/Pages/Home.vue"
+    ],
     "css": [
       "assets/app-9EzCSSsc.css"
     ]

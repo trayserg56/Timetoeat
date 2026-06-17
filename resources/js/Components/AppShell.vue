@@ -2,7 +2,7 @@
 import AuthModal from './AuthModal.vue';
 import { cartApi } from '../composables/useCart';
 import { requestYandexCaptchaToken, resetYandexCaptchaWidget } from '../composables/useYandexCaptcha';
-import { authenticateTelegramWebApp, getTelegramInitData, getTelegramUser, initTelegramWebApp, isTelegramWebApp, shouldSkipCheckoutCaptcha } from '../composables/useTelegramWebApp';
+import { authenticateTelegramWebApp, ensureTelegramWebAppReady, getTelegramInitData, getTelegramUser, isTelegramWebApp, shouldSkipCheckoutCaptcha } from '../composables/useTelegramWebApp';
 import { mailtoHref, phoneHref, telegramHref } from '../utils/contacts';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue';
@@ -1057,7 +1057,7 @@ if (typeof window !== 'undefined') {
 }
 
 onMounted(async () => {
-    initTelegramWebApp();
+    await ensureTelegramWebAppReady();
 
     if (! authUser.value && isTelegramWebApp()) {
         await authenticateTelegramWebApp();

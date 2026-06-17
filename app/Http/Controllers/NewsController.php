@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\News;
 use App\Support\CatalogImageUrl;
+use App\Support\LcpPreload;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -60,6 +61,13 @@ class NewsController extends Controller
             ])
             ->values();
 
+        $featuredImage = CatalogImageUrl::resolve(
+            $news->image_url ?: $news->image_path,
+            (int) config('catalog.images.hero_width', 1200),
+        );
+
+        LcpPreload::share($featuredImage);
+
         return Inertia::render('News/Show', [
             'news' => [
                 'id' => $news->id,
@@ -67,10 +75,7 @@ class NewsController extends Controller
                 'slug' => $news->slug,
                 'excerpt' => $news->excerpt,
                 'content' => $news->content,
-                'image' => CatalogImageUrl::resolve(
-                    $news->image_url ?: $news->image_path,
-                    (int) config('catalog.images.hero_width', 1200),
-                ),
+                'image' => $featuredImage,
                 'published_at' => $news->published_at?->toIso8601String(),
             ],
             'latestNews' => $latestNews,
