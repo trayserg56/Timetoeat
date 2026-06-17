@@ -112,6 +112,23 @@ bash scripts/set-github-secrets.sh
 
 Workflow `.github/workflows/deploy.yml` подключается по SSH и запускает `scripts/deploy.sh`: `git pull`, сборка frontend, миграции, кеш Laravel, перезапуск контейнеров.
 
+### Telegram-бот для заказов
+
+1. Создайте бота через [@BotFather](https://t.me/BotFather) и добавьте его в группу администратора.
+2. В админке → **Настройки сайта** → **Telegram-бот** укажите:
+   - токен бота;
+   - chat ID группы (можно узнать через [@userinfobot](https://t.me/userinfobot) или `@getidsbot`);
+   - секрет webhook — любая длинная случайная строка, например `openssl rand -hex 24`.
+3. **Кнопка «Подтвердить»** работает только через webhook. Telegram принимает webhook **только по HTTPS** — нужен домен с SSL, не голый IP по HTTP.
+4. После настройки и смены `APP_URL` на `https://ваш-домен` webhook регистрируется автоматически при деплое. Вручную:
+
+```bash
+php artisan telegram:set-webhook https://ваш-домен
+php artisan telegram:webhook-info
+```
+
+Уведомления о **новых заказах** (исходящие сообщения в группу) работают сразу после шагов 1–2. Webhook нужен только для нажатия кнопки в Telegram.
+
 ## Запуск
 
 Требуется установленный Docker Desktop.
@@ -209,7 +226,7 @@ make shell
 - Исправлена прокрутка модального окна деталки блюда/набора на мобильных: контент больше не обрезается.
 - Добавлен деплой на production: `compose.prod.yaml`, скрипты `scripts/deploy.sh` и `scripts/server-init.sh`, GitHub Actions workflow для автодеплоя при push в `main`.
 - Подключена Yandex SmartCaptcha в невидимом режиме: вход, регистрация, сброс пароля и оформление заказа. Ключи задаются через `YANDEX_CAPTCHA_CLIENT_KEY` и `YANDEX_CAPTCHA_SERVER_KEY`.
-- Telegram-бот для заказов: полный цикл статусов через inline-кнопки, обновление карточки заказа и отдельные уведомления о смене статуса и оплаты в чате команды.
+- Telegram-бот для заказов: уведомление о новом заказе с тегом `#НОВЫЙ` и кнопкой «Подтвердить» в чате администратора; webhook регистрируется автоматически при деплое, если `APP_URL` начинается с `https://`.
 
 ### 2026-06-10
 

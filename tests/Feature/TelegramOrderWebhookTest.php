@@ -69,8 +69,8 @@ class TelegramOrderWebhookTest extends TestCase
         Http::assertSent(fn ($request): bool => $request->url() === 'https://api.telegram.org/bottest-bot-token/editMessageText'
             && $request->data()['chat_id'] === '-5363983169'
             && $request->data()['message_id'] === 44
-            && str_contains($request->data()['text'], 'Статус заказа: <b>Подтверждён</b>')
-            && str_contains($request->data()['reply_markup'], '👨‍🍳 Готовится'));
+            && str_contains($request->data()['text'], 'Статус: <b>Подтверждён</b>')
+            && str_contains($request->data()['reply_markup'], '✅ Подтверждён'));
     }
 
     public function test_webhook_ignores_callbacks_from_other_chat(): void

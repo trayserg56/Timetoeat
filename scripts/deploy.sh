@@ -43,4 +43,10 @@ $COMPOSE run --rm app php artisan view:cache
 echo "==> Restart application"
 $COMPOSE up -d app nginx
 
+APP_URL="$(grep '^APP_URL=' .env | cut -d= -f2- | tr -d '\"')"
+if [[ "$APP_URL" == https://* ]]; then
+  echo "==> Register Telegram webhook"
+  $COMPOSE exec -T app php artisan telegram:set-webhook "$APP_URL" || echo "Telegram webhook skipped: configure bot token, chat id and secret in admin."
+fi
+
 echo "==> Deploy finished"
