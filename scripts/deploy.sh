@@ -24,15 +24,18 @@ if ! grep -q '^APP_KEY=base64:' .env; then
   $COMPOSE run --rm app php artisan key:generate --force
 fi
 
-echo "==> Build frontend"
-docker run --rm \
-  -v "$ROOT_DIR:/var/www/html" \
-  -w /var/www/html \
-  node:24-alpine \
-  sh -lc "npm ci && npm run build"
+echo "==> Verify frontend build"
+if [ ! -f public/build/manifest.json ]; then
+  echo "ERROR: public/build/manifest.json not found."
+  echo "Run npm run build locally and commit public/build before deploy."
+  exit 1
+fi
 
 echo "==> Run migrations"
 $COMPOSE run --rm app php artisan migrate --force --no-interaction
+
+echo "==> Fix storage permissions"
+$COMPOSE run --rm app sh -c 'mkdir -p storage/app/private/receipts storage/framework/{cache,sessions,views} storage/logs && chown -R www-data:www-data storage bootstrap/cache && chmod -R ug+rwx storage bootstrap/cache'
 
 echo "==> Optimize Laravel"
 $COMPOSE run --rm app php artisan storage:link --force || true
@@ -47,6 +50,8 @@ APP_URL="$(grep '^APP_URL=' .env | cut -d= -f2- | tr -d '\"')"
 if [[ "$APP_URL" == https://* ]]; then
   echo "==> Register Telegram webhook"
   $COMPOSE exec -T app php artisan telegram:set-webhook "$APP_URL" || echo "Telegram webhook skipped: configure bot token, chat id and secret in admin."
+  echo "==> Configure Telegram Mini App menu button"
+  $COMPOSE exec -T app php artisan telegram:set-web-app "$APP_URL" || echo "Telegram Mini App skipped: check HTTPS URL and bot token."
 fi
 
 echo "==> Deploy finished"

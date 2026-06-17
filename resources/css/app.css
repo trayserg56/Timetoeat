@@ -29,4 +29,13 @@
     textarea:disabled {
         cursor: not-allowed;
     }
+
+    html.telegram-webapp,
+    body.telegram-webapp {
+        background-color: #fff8f1;
+    }
+
+    body.telegram-webapp {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
 }

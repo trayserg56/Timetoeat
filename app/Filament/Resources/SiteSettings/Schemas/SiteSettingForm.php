@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SiteSettings\Schemas;
 
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -95,12 +96,38 @@ class SiteSettingForm
                 Section::make('Telegram-бот')
                     ->description('Настройки уведомлений о заказах и webhook для кнопок в Telegram.')
                     ->schema([
+                        Placeholder::make('telegram_saved_status')
+                            ->label('Текущие настройки')
+                            ->content(function (?\App\Models\SiteSetting $record): string {
+                                if (! $record) {
+                                    return 'Сохранённых настроек пока нет.';
+                                }
+
+                                $parts = [];
+
+                                if (filled($record->telegram_bot_token)) {
+                                    $parts[] = 'Токен сохранён';
+                                }
+
+                                if (filled($record->telegram_orders_chat_id)) {
+                                    $parts[] = 'Chat ID: '.$record->telegram_orders_chat_id;
+                                }
+
+                                if (filled($record->telegram_webhook_secret)) {
+                                    $parts[] = 'Секрет webhook сохранён';
+                                }
+
+                                return $parts !== []
+                                    ? implode(' · ', $parts)
+                                    : 'В админке Telegram не задан — используются значения из .env (если есть).';
+                            })
+                            ->columnSpanFull(),
                         TextInput::make('telegram_bot_token')
                             ->label('Токен бота')
                             ->password()
                             ->afterStateHydrated(fn ($component) => $component->state(''))
                             ->dehydrated(fn (?string $state): bool => filled($state))
-                            ->helperText('Оставьте пустым, чтобы сохранить текущий токен. Если токен не задан в админке, будет использоваться TELEGRAM_BOT_TOKEN из .env.'),
+                            ->helperText('Поле намеренно пустое при редактировании (как пароль). Оставьте пустым, чтобы не менять. Иначе — TELEGRAM_BOT_TOKEN из .env.'),
                         TextInput::make('telegram_orders_chat_id')
                             ->label('Chat ID группы/чата')
                             ->helperText('Например: -5363983169. Если поле пустое, будет использоваться TELEGRAM_ORDERS_CHAT_ID из .env.'),

@@ -2,6 +2,7 @@
 import AuthModal from './AuthModal.vue';
 import { cartApi } from '../composables/useCart';
 import { requestYandexCaptchaToken, resetYandexCaptchaWidget } from '../composables/useYandexCaptcha';
+import { getTelegramUser, initTelegramWebApp } from '../composables/useTelegramWebApp';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue';
 
@@ -1007,6 +1008,23 @@ watch(pageUrl, (url) => {
     syncAuthModalWithUrl(url);
 }, { immediate: true });
 
+function applyTelegramCheckoutDefaults() {
+    const telegramUser = getTelegramUser();
+
+    if (! telegramUser) {
+        return;
+    }
+
+    if (telegramUser.firstName) {
+        const fullName = [telegramUser.firstName, telegramUser.lastName].filter(Boolean).join(' ');
+        checkoutForm.customer_name ||= fullName;
+    }
+
+    if (telegramUser.username) {
+        checkoutForm.customer_telegram_username ||= telegramUser.username;
+    }
+}
+
 watch(authUser, (user) => {
     if (user) {
         isAuthModalOpen.value = false;
@@ -1024,6 +1042,9 @@ if (typeof window !== 'undefined') {
 }
 
 onMounted(() => {
+    initTelegramWebApp();
+    applyTelegramCheckoutDefaults();
+
     const savedCart = window.localStorage.getItem(storageKey);
 
     if (savedCart) {
@@ -1083,7 +1104,7 @@ onBeforeUnmount(() => {
 
         <header class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
             <div class="flex items-center justify-between gap-3">
-                <Link href="/" class="flex min-w-0 items-center gap-2.5 sm:gap-3">
+                <Link href="/" class="flex min-w-0 items-center gap-2.5 sm:gap-3 lg:shrink-0">
                     <div class="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-stone-950 text-sm font-black text-white sm:size-11">
                         FD
                     </div>
@@ -1092,6 +1113,17 @@ onBeforeUnmount(() => {
                         <div class="hidden text-sm text-stone-500 sm:block">Домашняя еда без переписок</div>
                     </div>
                 </Link>
+
+                <nav v-if="siteNavigation.length" class="hidden flex-1 items-center justify-center gap-3 lg:flex">
+                    <Link
+                        v-for="item in siteNavigation"
+                        :key="item.id"
+                        :href="item.href"
+                        class="rounded-full bg-white px-4 py-2 text-sm font-semibold shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
+                    >
+                        {{ item.label }}
+                    </Link>
+                </nav>
 
                 <div class="flex shrink-0 items-center gap-2 sm:gap-3">
                     <button
@@ -1159,17 +1191,6 @@ onBeforeUnmount(() => {
                     </template>
                 </div>
             </div>
-
-            <nav v-if="siteNavigation.length" class="mt-4 hidden flex-wrap items-center justify-center gap-3 lg:flex">
-                <Link
-                    v-for="item in siteNavigation"
-                    :key="item.id"
-                    :href="item.href"
-                    class="rounded-full bg-white px-4 py-2 text-sm font-semibold shadow-sm ring-1 ring-stone-200 transition hover:bg-stone-50"
-                >
-                    {{ item.label }}
-                </Link>
-            </nav>
 
             <transition
                 enter-active-class="transition duration-200 ease-out"

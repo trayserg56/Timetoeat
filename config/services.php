@@ -39,6 +39,7 @@ return [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
         'orders_chat_id' => env('TELEGRAM_ORDERS_CHAT_ID'),
         'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
+        'web_app_url' => env('TELEGRAM_WEB_APP_URL'),
     ],
 
     'max' => [
