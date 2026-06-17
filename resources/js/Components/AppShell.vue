@@ -1,6 +1,7 @@
 <script setup>
 import AuthModal from './AuthModal.vue';
 import { cartApi } from '../composables/useCart';
+import { requestYandexCaptchaToken, resetYandexCaptchaWidget } from '../composables/useYandexCaptcha';
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch, watchEffect } from 'vue';
 
@@ -18,6 +19,7 @@ const siteContacts = computed(() => page.props.siteContacts ?? {});
 const flashSuccess = computed(() => page.props.flash?.success);
 const flashOrder = computed(() => page.props.flash?.order);
 const flashRepeatOrder = computed(() => page.props.flash?.repeat_order);
+const yandexCaptcha = computed(() => page.props.yandexCaptcha ?? { enabled: false, clientKey: null });
 const pageUrl = computed(() => page.url ?? '');
 const checkoutSettings = computed(() => page.props.checkoutSettings ?? {});
 const cartCatalogItems = computed(() => page.props.cartCatalogItems ?? []);
@@ -26,6 +28,7 @@ const savedDeliveryAddressPresets = computed(() => authUser.value?.saved_deliver
 const savedDeliveryCommentPresets = computed(() => authUser.value?.saved_delivery_comments ?? []);
 
 const toast = ref({ visible: false, message: '' });
+const checkoutCaptchaError = ref('');
 const isAuthModalOpen = ref(false);
 const authModalMode = ref('login');
 const isMobileMenuOpen = ref(false);
@@ -57,6 +60,7 @@ const checkoutForm = useForm({
     customer_email: '',
     receipt: null,
     order_groups: [],
+    'smart-token': '',
 });
 
 const orderableItems = computed(() =>
@@ -738,7 +742,7 @@ function setDocumentScrollLock(locked) {
     document.body.style.overflow = locked ? 'hidden' : '';
 }
 
-function submitOrder() {
+async function submitOrder() {
     checkoutForm.order_groups = cartGroupsDetailed.value
         .filter((group) => group.itemsDetailed.length > 0)
         .map((group) => ({
@@ -751,6 +755,21 @@ function submitOrder() {
             })),
         }));
 
+    checkoutCaptchaError.value = '';
+
+    if (yandexCaptcha.value.enabled) {
+        try {
+            checkoutForm['smart-token'] = await requestYandexCaptchaToken({
+                containerId: 'checkout-captcha-container',
+                siteKey: yandexCaptcha.value.clientKey,
+            });
+        } catch (error) {
+            checkoutCaptchaError.value = error?.message || 'Не удалось пройти проверку безопасности. Попробуйте ещё раз.';
+
+            return;
+        }
+    }
+
     checkoutForm.post('/orders', {
         forceFormData: true,
         preserveScroll: true,
@@ -758,9 +777,10 @@ function submitOrder() {
             const nextGroup = createCartGroup();
             cartGroups.value = [nextGroup];
             activeCartGroupId.value = nextGroup.id;
-            checkoutForm.reset('receipt', 'order_groups');
+            checkoutForm.reset('receipt', 'order_groups', 'smart-token');
             isCartOpen.value = false;
         },
+        onError: () => resetYandexCaptchaWidget(),
     });
 }
 
@@ -1618,6 +1638,17 @@ onBeforeUnmount(() => {
                         <span class="mb-2 block text-sm font-medium text-stone-700">Чек перевода</span>
                         <input type="file" accept=".jpg,.jpeg,.png,.pdf,.webp" class="block w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm" @input="checkoutForm.receipt = $event.target.files[0]" />
                     </label>
+
+                    <div id="checkout-captcha-container" class="sr-only" aria-hidden="true"></div>
+
+                    <p v-if="yandexCaptcha.enabled" class="text-xs leading-5 text-stone-400">
+                        Оформление заказа защищено сервисом
+                        <a href="https://yandex.ru/legal/smartcaptcha_notice/" class="underline hover:text-stone-600" target="_blank" rel="noopener noreferrer">Yandex SmartCaptcha</a>.
+                    </p>
+
+                    <div v-if="checkoutCaptchaError" class="rounded-[1.5rem] bg-red-50 px-5 py-4 text-sm text-red-800 shadow-sm">
+                        {{ checkoutCaptchaError }}
+                    </div>
 
                     <div v-if="Object.keys(checkoutForm.errors).length" class="rounded-[1.5rem] bg-red-50 px-5 py-4 text-sm text-red-800 shadow-sm">
                         <div class="font-bold text-red-950">Проверьте данные заказа</div>

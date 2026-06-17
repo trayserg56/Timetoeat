@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Rules\YandexSmartCaptcha;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
@@ -20,6 +21,7 @@ class RegisterRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:32'],
             'telegram_username' => ['required', 'regex:/^@[A-Za-z0-9_]{5,32}$/'],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'smart-token' => [new YandexSmartCaptcha],
         ];
     }
 

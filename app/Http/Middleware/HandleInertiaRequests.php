@@ -76,6 +76,10 @@ class HandleInertiaRequests extends Middleware
             ],
             'cartMenuDate' => $menuDate,
             'cartCatalogItems' => $this->buildCartCatalogItems($menuDate),
+            'yandexCaptcha' => [
+                'clientKey' => config('services.yandex_captcha.client_key'),
+                'enabled' => filled(config('services.yandex_captcha.server_key')),
+            ],
         ];
     }
 

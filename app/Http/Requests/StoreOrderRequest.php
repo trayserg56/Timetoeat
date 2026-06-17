@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\YandexSmartCaptcha;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -41,6 +42,7 @@ class StoreOrderRequest extends FormRequest
             'order_groups.*.items.*.type' => ['required', Rule::in(['product', 'meal_set'])],
             'order_groups.*.items.*.id' => ['required', 'integer', 'min:1'],
             'order_groups.*.items.*.quantity' => ['required', 'integer', 'min:1', 'max:99'],
+            'smart-token' => [new YandexSmartCaptcha],
         ];
     }
 

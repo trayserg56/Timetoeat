@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Rules\YandexSmartCaptcha;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
 
@@ -18,6 +19,7 @@ class ResetPasswordWithCodeRequest extends FormRequest
             'email' => ['required', 'email'],
             'code' => ['required', 'digits:6'],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'smart-token' => [new YandexSmartCaptcha],
         ];
     }
 

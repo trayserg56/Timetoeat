@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Rules\YandexSmartCaptcha;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ForgotPasswordCodeRequest extends FormRequest
@@ -15,6 +16,7 @@ class ForgotPasswordCodeRequest extends FormRequest
     {
         return [
             'email' => ['required', 'email'],
+            'smart-token' => [new YandexSmartCaptcha],
         ];
     }
 

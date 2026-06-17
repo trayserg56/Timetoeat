@@ -1,6 +1,7 @@
 <script setup>
+import { requestYandexCaptchaToken, resetYandexCaptchaWidget } from '../composables/useYandexCaptcha';
 import { computed, ref, watch } from 'vue';
-import { useForm } from '@inertiajs/vue3';
+import { useForm, usePage } from '@inertiajs/vue3';
 
 const props = defineProps({
     visible: {
@@ -15,6 +16,10 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
+const page = usePage();
+const captchaConfig = computed(() => page.props.yandexCaptcha ?? { enabled: false, clientKey: null });
+const captchaError = ref('');
+
 const currentMode = ref(props.initialMode);
 
 const isLoginMode = computed(() => currentMode.value === 'login');
@@ -25,10 +30,12 @@ const isResetPasswordMode = computed(() => currentMode.value === 'reset-password
 const loginForm = useForm({
     email: '',
     password: '',
+    'smart-token': '',
 });
 
 const forgotPasswordForm = useForm({
     email: '',
+    'smart-token': '',
 });
 
 const resetPasswordForm = useForm({
@@ -36,6 +43,7 @@ const resetPasswordForm = useForm({
     code: '',
     password: '',
     password_confirmation: '',
+    'smart-token': '',
 });
 
 const registerForm = useForm({
@@ -45,6 +53,7 @@ const registerForm = useForm({
     telegram_username: '',
     password: '',
     password_confirmation: '',
+    'smart-token': '',
 });
 
 watch(
@@ -145,11 +154,42 @@ function handleResetCodeInput(event) {
     resetPasswordForm.code = String(event.target.value ?? '').replace(/\D/g, '').slice(0, 6);
 }
 
-function submitLogin() {
-    loginForm.post('/login');
+async function attachCaptchaToken(form) {
+    if (!captchaConfig.value.enabled) {
+        return true;
+    }
+
+    captchaError.value = '';
+
+    try {
+        form['smart-token'] = await requestYandexCaptchaToken({
+            containerId: 'auth-captcha-container',
+            siteKey: captchaConfig.value.clientKey,
+        });
+
+        return true;
+    } catch (error) {
+        captchaError.value = error?.message || 'Не удалось пройти проверку безопасности. Попробуйте ещё раз.';
+
+        return false;
+    }
 }
 
-function submitForgotPassword() {
+async function submitLogin() {
+    if (!(await attachCaptchaToken(loginForm))) {
+        return;
+    }
+
+    loginForm.post('/login', {
+        onError: () => resetYandexCaptchaWidget(),
+    });
+}
+
+async function submitForgotPassword() {
+    if (!(await attachCaptchaToken(forgotPasswordForm))) {
+        return;
+    }
+
     forgotPasswordForm.post('/forgot-password', {
         errorBag: 'forgotPassword',
         preserveScroll: true,
@@ -160,18 +200,30 @@ function submitForgotPassword() {
             resetPasswordForm.password_confirmation = '';
             currentMode.value = 'reset-password';
         },
+        onError: () => resetYandexCaptchaWidget(),
     });
 }
 
-function submitResetPassword() {
+async function submitResetPassword() {
+    if (!(await attachCaptchaToken(resetPasswordForm))) {
+        return;
+    }
+
     resetPasswordForm.post('/reset-password', {
         errorBag: 'resetPassword',
         preserveScroll: true,
+        onError: () => resetYandexCaptchaWidget(),
     });
 }
 
-function submitRegister() {
-    registerForm.post('/register');
+async function submitRegister() {
+    if (!(await attachCaptchaToken(registerForm))) {
+        return;
+    }
+
+    registerForm.post('/register', {
+        onError: () => resetYandexCaptchaWidget(),
+    });
 }
 </script>
 
@@ -234,6 +286,17 @@ function submitRegister() {
                         Зарегистрироваться
                     </button>
                 </div>
+
+                <div id="auth-captcha-container" class="sr-only" aria-hidden="true"></div>
+
+                <p v-if="captchaConfig.enabled" class="mt-4 text-xs leading-5 text-stone-400">
+                    Форма защищена сервисом
+                    <a href="https://yandex.ru/legal/smartcaptcha_notice/" class="underline hover:text-stone-600" target="_blank" rel="noopener noreferrer">Yandex SmartCaptcha</a>.
+                </p>
+
+                <p v-if="captchaError" class="mt-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {{ captchaError }}
+                </p>
 
                 <form
                     v-if="isLoginMode"
