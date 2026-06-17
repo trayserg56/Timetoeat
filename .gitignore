@@ -32,3 +32,4 @@ Thumbs.db
 /certbot/logs/
 /certbot/www/*
 !/certbot/www/.gitkeep
+/docker/nginx/active-ssl.conf

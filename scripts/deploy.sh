@@ -44,6 +44,10 @@ $COMPOSE run --rm app php artisan route:cache
 $COMPOSE run --rm app php artisan view:cache
 
 echo "==> Restart application"
+COMPOSE="docker compose -f compose.yaml -f compose.prod.yaml"
+if bash scripts/ensure-ssl-config.sh; then
+  COMPOSE="$COMPOSE -f compose.ssl.yaml"
+fi
 $COMPOSE up -d app nginx
 
 APP_URL="$(grep '^APP_URL=' .env | cut -d= -f2- | tr -d '\"')"

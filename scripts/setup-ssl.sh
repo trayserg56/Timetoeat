@@ -41,8 +41,7 @@ certbot certonly \
   --non-interactive
 
 echo "==> Install nginx SSL config"
-cp docker/nginx/ssl.conf docker/nginx/active-ssl.conf
-sed -i "s/__DOMAIN__/${DOMAIN}/g" docker/nginx/active-ssl.conf
+bash scripts/ensure-ssl-config.sh
 
 if grep -q '^APP_URL=' .env; then
   sed -i "s|^APP_URL=.*|APP_URL=https://${DOMAIN}|" .env
