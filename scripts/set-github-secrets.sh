@@ -19,8 +19,10 @@ if [ ! -f "$KEY_FILE" ]; then
   exit 1
 fi
 
-gh secret set SERVER_HOST -b "5.253.188.165"
-gh secret set SERVER_USER -b "root"
-gh secret set SERVER_SSH_KEY < "$KEY_FILE"
+REPO="trayserg56/Timetoeat"
+
+gh secret set SERVER_HOST -R "$REPO" -b "5.253.188.165"
+gh secret set SERVER_USER -R "$REPO" -b "root"
+gh secret set SERVER_SSH_KEY -R "$REPO" < "$KEY_FILE"
 
 echo "GitHub Actions secrets configured."
