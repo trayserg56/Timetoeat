@@ -2,11 +2,8 @@ services:
   nginx:
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./certbot/www:/var/www/certbot:ro
-      - ./certbot/conf:/etc/letsencrypt:ro
-      - ./docker/nginx/active-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
     restart: unless-stopped
 
   app:

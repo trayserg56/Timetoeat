@@ -17,6 +17,7 @@ if [[ -z "$DOMAIN" || -z "$EMAIL" ]]; then
 fi
 
 COMPOSE="docker compose -f compose.yaml -f compose.prod.yaml"
+COMPOSE_SSL="docker compose -f compose.yaml -f compose.prod.yaml -f compose.ssl.yaml"
 
 mkdir -p certbot/www certbot/conf certbot/work certbot/logs
 
@@ -50,7 +51,7 @@ else
 fi
 
 echo "==> Restart nginx with SSL"
-$COMPOSE up -d nginx
+$COMPOSE_SSL up -d nginx
 
 echo "==> Clear config cache"
 $COMPOSE exec -T app php artisan config:clear

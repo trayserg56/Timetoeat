@@ -1,0 +1,7 @@
+services:
+  nginx:
+    ports:
+      - "443:443"
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./docker/nginx/active-ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
